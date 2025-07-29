@@ -4,6 +4,8 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Signup from './pages/Signup.jsx';
+import TaskCreate from './pages/TaskCreate';
+import TaskEdit from './pages/TaskEdit';
 
 function App() {
   
@@ -12,6 +14,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path='/auth/signup' element={<Signup/>}/>
+        <Route path="/addtask" element={<TaskCreate />} />
+        <Route path="/edittask" element={<TaskEdit />} />
       </Routes>
     </BrowserRouter>
   )
