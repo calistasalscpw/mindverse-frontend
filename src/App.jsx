@@ -1,20 +1,24 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Signup from './pages/Signup.jsx';
 import TaskCreate from './pages/TaskCreate';
 import TaskEdit from './pages/TaskEdit';
 
 function App() {
+  
+
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/addtask" element={<TaskCreate />} />
-          <Route path="/edittask" element={<TaskEdit />} />
-          <Route path="/" element={<TaskCreate />} />
-        </Routes>
-      </div>
-    </Router>
-  );
+    <BrowserRouter>
+      <Routes>
+        <Route path='/auth/signup' element={<Signup/>}/>
+        <Route path="/addtask" element={<TaskCreate />} />
+        <Route path="/edittask" element={<TaskEdit />} />
+      </Routes>
+    </BrowserRouter>
+  )
 }
 
 export default App;
