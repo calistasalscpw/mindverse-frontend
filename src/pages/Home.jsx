@@ -69,23 +69,23 @@ const Home = () => {
   const [taskColumns, setTaskColumns] = useState(taskColumnsData);
 
   const mainLayoutStyle = {
-    height: '100%',
+    minHeight: '100%',
     width: '100%',
     backgroundColor: '#F9FAFB',
-    overflow: 'hidden'
+    // overflow: 'hidden'
   };
   
   const siderStyle = {
     background: '#FFFFFF', 
     padding: '24px', 
     borderRight: '1px solid #e5e7eb',
-    height: '100%',
+    height: 'calc(100vh - 64px)',
     overflowY: 'auto',
-    overflowX: 'hidden'
+    // overflowX: 'hidden'
   };
 
   return (
-    <div style={{ fontFamily: 'Poppins, sans-serif', height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
+    <div style={{ fontFamily: 'Poppins, sans-serif', height: 'calc(100vh - 64px)' }}>
       <Layout style={mainLayoutStyle}>
         <Sider width={256} style={siderStyle}>
           <Title level={5} style={{ color: '#000', marginBottom: '16px' }}>Team Members</Title>
@@ -107,7 +107,7 @@ const Home = () => {
           </Space>
         </Sider>
         
-        <Content style={{ padding: '24px', height: '100%', overflow: 'hidden' }}>
+        <Content style={{ padding: '24px' }}>
           <Title level={6} style={{ color: '#000' }}>Personal Dashboard</Title>
           <Text type="secondary">Manage your tasks and collaborate with your team</Text>
           
