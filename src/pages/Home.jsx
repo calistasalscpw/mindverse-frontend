@@ -79,9 +79,9 @@ const Home = () => {
     background: '#FFFFFF', 
     padding: '24px', 
     borderRight: '1px solid #e5e7eb',
-    height: '100%',
+    height: 'calc(100vh - 64px)',
     overflowY: 'auto',
-    overflowX: 'hidden'
+    // overflowX: 'hidden'
   };
 
   return (
