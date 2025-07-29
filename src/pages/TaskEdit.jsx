@@ -1,12 +1,12 @@
 import React from 'react';
 import { Form, Input, DatePicker, Select, Button, Typography, Row, Col } from 'antd'; 
-import stickman2Image from "../assets/stickman2.png";
+import stickman2Image from "../assets/stickaman2.png";
 
 
 const { Option } = Select;
 const { Title } = Typography;
 
-function TaskCreate() {
+function TaskEdit() {
   const [form] = Form.useForm();
 
   const onFinish = (values) => {
@@ -17,36 +17,33 @@ function TaskCreate() {
   return (
     <div style={{
       display: 'flex',
-      justifyContent: 'center', // Pusatkan horizontal
-      alignItems: 'center',     // Pusatkan vertikal
-      minHeight: '100vh',       // Tinggi minimal 100% viewport
-      backgroundColor: '#f0f2f5', // Background warna abu-abu muda seperti di gambar
+      justifyContent: 'center', 
+      alignItems: 'center',    
+      minHeight: '100vh',       
+      backgroundColor: '#f0f2f5', 
     }}>
-      {/* HAPUS BAGIAN HEADER/NAVBAR SEBELUMNYA */}
-      {/* HAPUS BAGIAN SIDEBAR SEBELUMNYA */}
 
-      {/* Konten utama form Task Create (hanya card-nya saja) */}
-      <div style={{ // Menggantikan .task-form-card
+      <div style={{ 
         backgroundColor: 'white',
         borderRadius: '20px',
         boxShadow: '0 8px 16px rgba(0, 0, 0, 0.15)',
         padding: '40px',
-        width: '800px', // Lebar card (sesuaikan)
-        display: 'grid', // Gunakan grid untuk layout form dan gambar
-        gridTemplateColumns: '2fr 1fr', // Dua kolom: form (2 bagian) dan gambar (1 bagian)
-        gap: '30px', // Jarak antar kolom
-        alignItems: 'center', // Vertically align items in the grid
-        position: 'relative', // Untuk posisi lingkaran abu-abu
+        width: '800px', 
+        display: 'grid',
+        gridTemplateColumns: '2fr 1fr', 
+        gap: '30px', 
+        alignItems: 'center',
+        position: 'relative', 
       }}>
         {/* Lingkaran abu-abu di kiri atas kartu */}
         <div style={{
           position: 'absolute',
-          top: '20px', // Sesuaikan posisi
-          left: '20px', // Sesuaikan posisi
+          top: '20px', 
+          left: '20px', 
           width: '30px',
           height: '30px',
           borderRadius: '50%',
-          backgroundColor: '#E0E0E0', // Warna abu-abu yang cocok
+          backgroundColor: '#E0E0E0', 
         }}></div>
 
         <Title level={2} style={{ gridColumn: '1 / 2', marginTop: 0, color: '#333', marginLeft: '50px' }}>Edit Task</Title> 
@@ -57,17 +54,17 @@ function TaskCreate() {
           name="task_create_form"
           onFinish={onFinish}
           layout="vertical"
-          style={{ // Menggantikan .task-form-card form
-            gridColumn: '1 / 2', // Form di kolom pertama
+          style={{ 
+            gridColumn: '1 / 2', 
             display: 'flex',
             flexDirection: 'column',
             gap: '15px',
-            marginLeft: '50px', // Geser form ke kanan untuk sejajar dengan teks
+            marginLeft: '50px', 
           }}
         >
           {/* Baris untuk Task Name dan Deadline (bersebelahan) */}
-          <Row gutter={16}> {/* Gutter untuk jarak antar kolom */}
-            <Col span={12}> {/* Mengambil 1/2 lebar */}
+          <Row gutter={16}> 
+            <Col span={12}>
               <Form.Item
                 label="Task Name*"
                 name="taskName"
@@ -76,7 +73,7 @@ function TaskCreate() {
                 <Input placeholder="Task Name" />
               </Form.Item>
             </Col>
-            <Col span={12}> {/* Mengambil 1/2 lebar */}
+            <Col span={12}> 
               <Form.Item
                 label="Deadline"
                 name="deadline"
@@ -112,8 +109,8 @@ function TaskCreate() {
 
           {/* Tombol Submit */}
           <Form.Item>
-            <Button type="primary" htmlType="submit" style={{ // Menggantikan .add-task-button
-              background: 'linear-gradient(to right, #8a2be2, #ff69b4)', // Gradient ungu-pink
+            <Button type="primary" htmlType="submit" style={{
+              background: 'linear-gradient(to right, #8a2be2, #ff69b4)', 
               color: 'white',
               padding: '12px 25px',
               border: 'none',
@@ -131,41 +128,21 @@ function TaskCreate() {
         </Form>
 
         {/* Gambar stick figure */}
-        <div style={{ // Menggantikan .image-placeholder
+        <div style={{ 
           gridColumn: '2 / 3',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-          {/* Pastikan path gambar ini benar di folder public/ atau assets Anda */}
-          <img src={stickman2Image} alt="Todo List Illustration" style={{ // Menggantikan .image-placeholder img
+          <img src={stickman2Image} alt="Todo List Illustration" style={{ 
             maxWidth: '100%',
             height: 'auto',
             display: 'block',
           }} />
         </div>
       </div>
-
-      {/* Lingkaran robot di kanan bawah */}
-      <div style={{
-        position: 'fixed', // Agar tetap di posisi saat scroll
-        bottom: '20px',
-        right: '20px',
-        width: '50px',
-        height: '50px',
-        borderRadius: '50%',
-        backgroundColor: '#6a0dad', // Warna ungu
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        color: 'white',
-        fontSize: '2rem',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-      }}>
-        🤖
-      </div>
     </div>
   );
 }
 
-export default TaskCreate;
+export default TaskEdit;

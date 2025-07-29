@@ -1,13 +1,19 @@
 import React from 'react';
-import ForumPage from './pages/TaskCreate';
-//import ForumPage from './pages/TaskEdit';
-
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import TaskCreate from './pages/TaskCreate';
+import TaskEdit from './pages/TaskEdit';
 
 function App() {
   return (
-    <div className="App">
-      <ForumPage />
-    </div>
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/addtask" element={<TaskCreate />} />
+          <Route path="/edittask" element={<TaskEdit />} />
+          <Route path="/" element={<TaskCreate />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
