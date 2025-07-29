@@ -7,7 +7,7 @@ const { Content } = Layout;
 const Login = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Navbar />
+      {/* <Navbar /> */}
       <Content
         style={{
           backgroundColor: '#F9FAFB',
