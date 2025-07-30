@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Forum from './Pages/Forum';
 import ForumPostDetail from './Pages/ForumPostDetail';
-import CreatePost from './Pages/CreatePost';
+import ChatBot from './components/chatBot';
 
 function App() {
   React.useEffect(() => {
@@ -15,11 +15,11 @@ function App() {
 
   return (
     <Router>
+       <ChatBot />
       <Routes>
         <Route path="/" element={<Navigate to="/Forum" />} />
         <Route path="/forum" element={<Forum />} />
         <Route path="/forum/:id" element={<ForumPostDetail />} />
-        <Route path="/create" element={<CreatePost />} />
       </Routes>
     </Router>
   );

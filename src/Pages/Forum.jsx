@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Button, Input, Typography, Pagination, Layout, Space, Dropdown, Avatar } from 'antd';
+import { Button, Input, Typography, Pagination, Layout, Space, Dropdown, Avatar, Menu, Modal } from 'antd';
 import ForumPostCard from '../components/ForumPostCard';
+import CreatePost from './CreatePost';
 import { useNavigate } from 'react-router-dom';
 
 const { Header, Content } = Layout;
@@ -32,6 +33,7 @@ const dummyPosts = [
 const Forum = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const pageSize = 3;
   const navigate = useNavigate();
 
@@ -46,14 +48,14 @@ const Forum = () => {
   );
 
   const profileMenu = (
-    <div>
-      <a style={{ color: 'black' }} onClick={() => {}}>Profile</a>
-      <a style={{ color: 'black' }} onClick={() => {}}>Logout</a>
-    </div>
+    <Menu>
+      <Menu.Item key="profile" onClick={() => {}}>Profile</Menu.Item>
+      <Menu.Item key="logout" onClick={() => {}}>Logout</Menu.Item>
+    </Menu>
   );
 
   return (
-    <Layout style={{ minHeight: '100vh', fontFamily: 'Poppins', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)' }}>
+    <Layout style={{ minHeight: '100vh', fontFamily: 'Poppins', background: '#0f0c2a' }}>
       <Header style={{
   backgroundColor: 'rgba(0,0,0,0.2)',
   backdropFilter: 'blur(6px)',
@@ -76,13 +78,24 @@ const Forum = () => {
     </div>
     <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
       <Input.Search
-        placeholder="Search posts..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ width: 400, borderRadius: 8 }}
-      />
+  placeholder="Search posts..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  style={{
+    width: 700,
+    borderRadius: 8,
+    background: '#1f1c3a',
+    color: 'white',
+    border: 'none',
+  }}
+  inputStyle={{
+    background: '#1f1c3a',
+    color: 'white',
+    border: 'none',
+  }}
+/>
     </div>
-    <Dropdown overlay={profileMenu} placement="bottomRight">
+    <Dropdown overlay={profileMenu} placement="bottomRight" trigger={['click']}>
       <div
         style={{
           display: 'flex',
@@ -96,8 +109,8 @@ const Forum = () => {
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
       >
-        <Avatar src="https://randomuser.me/api/portraits/men/32.jpg" />
-        <span style={{ color: 'white', fontWeight: 500 }}>John Doe</span>
+        <Avatar src="" />
+        <span style={{ color: 'white', fontWeight: 500 }}>Ayamn</span>
       </div>
     </Dropdown>
   </div>
@@ -132,7 +145,7 @@ const Forum = () => {
             }}
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.16)'}
             onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-            onClick={() => navigate('/create')}
+            onClick={() => setIsModalOpen(true)}
           >
             What do you want to share?
           </button>
@@ -144,12 +157,33 @@ const Forum = () => {
           </Space>
 
           <Pagination
-            current={currentPage}
-            total={filteredPosts.length}
-            pageSize={pageSize}
-            onChange={(page) => setCurrentPage(page)}
-            style={{ marginTop: 20, textAlign: 'center' }}
-          />
+  current={currentPage}
+  total={filteredPosts.length}
+  pageSize={pageSize}
+  onChange={(page) => setCurrentPage(page)}
+  style={{
+    marginTop: 20,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  }}
+/>
+          <Modal
+            open={isModalOpen}
+            onCancel={() => setIsModalOpen(false)}
+            footer={null}
+            centered
+            width={720}
+            style={{ background: 'transparent', boxShadow: 'none', padding: 0 }}
+            bodyStyle={{ background: '#1f1c3a', borderRadius: 16, padding: 0 }}
+            modalRender={modal => (
+              <div style={{ background: 'transparent', boxShadow: 'none', padding: 0 }}>
+                {modal}
+              </div>
+            )}
+          >
+            <CreatePost onSuccess={() => setIsModalOpen(false)} />
+          </Modal>
         </div>
       </Content>
     </Layout>

@@ -6,18 +6,20 @@ const { Title, Paragraph, Text } = Typography;
 
 const ForumPostCard = ({ post, onClick }) => {
   return (
-    <Card
-      onClick={() => onClick(post.id)}
-      hoverable
+    <div
       style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        backdropFilter: 'blur(4px)',
-        borderRadius: '16px',
-        padding: '24px',
+        background: '#1f1c3a',
+        borderRadius: 16,
+        padding: 24,
+        marginBottom: 24,
+        border: '1px solid rgba(255,255,255,0.08)',
         color: 'white',
+        transition: 'background 0.2s',
+        cursor: 'pointer',
       }}
-      bodyStyle={{ padding: 0 }}
+      onMouseEnter={e => e.currentTarget.style.background = '#28244a'}
+      onMouseLeave={e => e.currentTarget.style.background = '#1f1c3a'}
+      onClick={() => onClick(post.id)}
     >
       <Space align="start" size="large">
         <Avatar
@@ -42,7 +44,7 @@ const ForumPostCard = ({ post, onClick }) => {
           </Space>
         </div>
       </Space>
-    </Card>
+    </div>
   );
 };
 
