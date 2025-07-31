@@ -1,87 +1,114 @@
-import { Layout, Menu, Input, Space, Avatar } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { Layout, Menu, Input, Space, Avatar, Dropdown } from "antd";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const { Header } = Layout;
 
 const Navbar = () => {
-  const menuItems = [
-    {
-      key: 'dashboard',
-      label: 'Dashboard',
-    },
-    {
-      key: 'forum',
-      label: 'Forum',
-    },
-  ];
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const profileMenu = (
+    <Menu>
+      <Menu.Item key="logout" onClick={() => {}}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <Header
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#602080',
-        padding: '0 24px',
-        height: '64px',
+        position: "fixed",
+        width: "100%",
+        top: 0,
+        zIndex: 1000,
+        backgroundColor: "rgba(0,0,0,0.2)",
+        backdropFilter: "blur(6px)",
+        padding: "0 2rem",
+        borderBottom: "1px solid rgba(255,255,255,0.1)",
       }}
     >
-      {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <div
-          style={{
-            width: '32px',
-            height: '32px',
-            backgroundColor: 'white',
-            borderRadius: '4px',
-            marginRight: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 'bold',
-            color: '#602080',
-            fontSize: '12px',
-          }}
-        >
-          logo
-        </div>
-      </div>
-
-      {/* Menu */}
-      <Menu
-        theme="dark"
-        mode="horizontal"
-        items={menuItems}
+      <div
         style={{
-          backgroundColor: 'transparent',
-          border: 'none',
-          flex: 1,
-          marginLeft: '24px',
+          display: "flex",
+          alignItems: "center",
+          height: "64px",
+          justifyContent: "space-between",
+          width: "100%",
         }}
-      />
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          <Link to="/" style={{ textDecoration: "none" }}>
+            <div
+              style={{
+                color: "white",
+                fontFamily: "Pacifico",
+                fontSize: "1.5rem",
+              }}
+            >
+              MindVerse
+            </div>
+          </Link>
+          <Space size="large">
+            <Link
+              to="/dashboard"
+              style={{ color: "white", fontWeight: 500 }}
+            >
+              Dashboard
+            </Link>
+            <Link to="/forum" style={{ color: "white", fontWeight: 500 }}>
+              Forum
+            </Link>
+          </Space>
+        </div>
 
-      {/* Search and User */}
-      <Space size="large">
-        <Input
-          placeholder="Search tasks..."
-          prefix={<SearchOutlined />}
-          style={{
-            width: '240px',
-            borderRadius: '6px',
-          }}
-        />
-        <Space>
-          <Avatar
-            size="small"
+        <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+          <Input.Search
+            placeholder="Search posts..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             style={{
-              backgroundColor: '#1890ff',
+              width: 700,
+              borderRadius: 8,
+              background: "#1f1c3a",
+              color: "white",
+              border: "none",
             }}
+            inputStyle={{
+              background: "#1f1c3a",
+              color: "white",
+              border: "none",
+            }}
+          />
+        </div>
+
+        <Dropdown
+          overlay={profileMenu}
+          placement="bottomRight"
+          trigger={["click"]}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              cursor: "pointer",
+              gap: 8,
+              padding: "6px 14px",
+              borderRadius: 24,
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.08)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "transparent")
+            }
           >
-            JD
-          </Avatar>
-          <span style={{ color: 'white', fontSize: '14px' }}>John Doe</span>
-        </Space>
-      </Space>
+            <Avatar src="" />
+            <span style={{ color: "white", fontWeight: 500 }}>Ayam</span>
+          </div>
+        </Dropdown>
+      </div>
     </Header>
   );
 };
