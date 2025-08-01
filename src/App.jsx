@@ -1,15 +1,16 @@
 import './App.css'
-import { BrowserRouter } from 'react-router-dom';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React from 'react';
+import Home from './pages/Home';
 import Signup from './pages/Signup.jsx';
 import Login from './pages/Login.jsx';
 import Navbar from './components/Navbar.jsx';
-import Forum from './pages/Forum'; 
-import ForumPostDetail from './pages/ForumPostDetail'; 
+import TaskCreate from './pages/TaskCreate';
+import TaskEdit from './pages/TaskEdit';
+import Forum from './pages/Forum';
+import ForumPostDetail from './pages/ForumPostDetail';
 import ChatBot from './components/chatBot';
 import { Layout } from 'antd';
-import React from 'react';
-
 const { Content } = Layout;
 
 function App() {
@@ -32,11 +33,13 @@ function App() {
           background: '#0f0c2a'
         }}>
           <Routes>
-            <Route path="/" element={<Navigate to="/forum" />} />
+            <Route path='/' element={<Home/>}/>
+            <Route path='/auth/signup' element={<Signup/>}/>
+            <Route path='/auth/login' element={<Login/>}/>
+            <Route path="/addtask" element={<TaskCreate />} />
+            <Route path="/edittask" element={<TaskEdit />} />
             <Route path="/forum" element={<Forum />} />
-            <Route path="/forum/:id" element={<ForumPostDetail />} />
-            <Route path="/auth/signup" element={<Signup />} />
-            <Route path="/auth/login" element={<Login />} />
+            <Route path="/forum/:postId" element={<ForumPostDetail />} />
           </Routes>
         </Content>
         <ChatBot />

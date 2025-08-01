@@ -7,7 +7,7 @@ const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [setTyping] = useState(false);
+  const [typing, setTyping] = useState(false);
   const handleToggle = () => setIsOpen(!isOpen);
 
 const handleSend = () => {
@@ -49,38 +49,40 @@ useEffect(() => {
 
   return (
     <>
-      <div
-        onClick={handleToggle}
-        style={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          width: 70,
-          height: 70,
-          cursor: 'pointer',
-          zIndex: 1001,
-        }}
-        title="Talk to Mindverse Assistant 🤖"
-      >
-        <img
-          src={botGif}
-          alt="Chatbot Button"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-            borderRadius: '50%',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          }}
-        />
-      </div>
+<div
+  onClick={handleToggle}
+  style={{
+    position: 'fixed',
+    bottom: 24,
+    right: 24,
+    width: 70,
+    height: 70,
+    cursor: 'pointer',
+    zIndex: 1001,
+  }}
+  title="Talk to Mindverse Assistant 🤖"
+>
+  <img
+    src={botGif}
+    alt="Chatbot Button"
+    style={{
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
+      borderRadius: '50%',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    }}
+  />
+</div>
+
+
 
       {isOpen && (
         <div
-          style={{
+        style={{
             position: 'fixed',
             right: 24,
-            bottom: 100,
+            bottom: 80,
             width: 400,
             maxHeight: '70vh',
             backgroundColor: '#fff',
@@ -90,12 +92,8 @@ useEffect(() => {
             flexDirection: 'column',
             zIndex: 1000,
             overflow: 'hidden',
-            transition: 'all 0.3s ease-in-out', 
-            opacity: 1,
-            transform: 'translateY(0)', 
-            animation: 'slideUp 0.3s ease-out', 
-          }}
-        >
+        }}
+>
           {/* Header */}
           <div style={{ padding: '12px 18px', background: 'linear-gradient(#8F1383, #202060)', color: '#FFFFFF', fontWeight: 'bold', fontSize: '16px' }}>
             Mindverse Assistant
@@ -165,21 +163,6 @@ useEffect(() => {
           </div>
         </div>
       )}
-
-      <style>
-        {`
-          @keyframes slideUp {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-        `}
-      </style>
     </>
   );
 };
