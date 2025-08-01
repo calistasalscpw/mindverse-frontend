@@ -1,6 +1,7 @@
 import React from 'react';
 import { Form, Input, DatePicker, Select, Button, Typography, Row, Col, Space } from 'antd'; 
 import stickmanImage from "../assets/stickman.png";
+import chatbotGif from "../assets/ChatBot.gif"; 
 
 const { Title } = Typography;
 
@@ -22,11 +23,18 @@ function TaskCreate({ form, onFinish, onCancel, submitting, teamMembers = [] }) 
         position: 'absolute',
         top: '20px',
         left: '20px',
-        width: '30px',
-        height: '30px',
+        width: '40px',
+        height: '40px',
         borderRadius: '50%',
-        backgroundColor: '#E0E0E0',
-      }}></div>
+        overflow: 'hidden',
+        backgroundColor: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+      }}>
+        <img src={chatbotGif} alt="ChatBot" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/40x40/e0e0e0/ffffff?text=ChatBot'; }} />
+      </div>
 
       <Title level={2} style={{ gridColumn: '1 / 2', marginTop: 0, color: '#333', marginLeft: '50px' }}>New Task</Title> 
       <p style={{ gridColumn: '1 / 2', color: '#666', marginBottom: '25px', marginLeft: '50px' }}>Add a new task to your project!</p>
@@ -46,7 +54,7 @@ function TaskCreate({ form, onFinish, onCancel, submitting, teamMembers = [] }) 
       >
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item label="Task Name*" name="name" rules={[{ required: true }]}>
+            <Form.Item label="Task Name" name="name" rules={[{ required: true }]}>
               <Input placeholder="Task Name" />
             </Form.Item>
           </Col>
@@ -57,12 +65,12 @@ function TaskCreate({ form, onFinish, onCancel, submitting, teamMembers = [] }) 
           </Col>
         </Row>
 
-        <Form.Item label="Assign To*" name="assignTo" rules={[{ required: true }]}>
+        <Form.Item label="Assign To" name="assignTo" rules={[{ required: true }]}>
           <Select
             mode="multiple"
             placeholder="Assign To"
             allowClear
-            options={teamMembers.map(user => ({ label: user.name, value: user._id }))}
+            options={teamMembers.map(user => ({ label: user._email, value: user._email }))}
           />
         </Form.Item>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Card, Avatar, Button, Badge, Space, Typography, Dropdown, Menu, Spin, Form, message, Modal } from 'antd';
+import { Layout, Card, Avatar, Button, Badge, Space, Typography, Dropdown, Menu, Spin, Form, message, Modal, Descriptions, Tag } from 'antd'; // Descriptions & Tag ditambahkan
 import { PlusOutlined, MoreOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -8,14 +8,25 @@ import API from '../api.js';
 import TaskCreate from '../components/TaskCreate';
 import TaskEdit from '../components/TaskEdit';
 
+const getStatusTagColor = (status) => {
+  switch (status) {
+    case 'To Do': return 'red';
+    case 'In Progress': return 'gold';
+    case 'Review': return 'purple';
+    case 'Done': return 'green';
+    default: return 'default';
+  }
+};
+
 const getCardColorForStatus = (status) => {
     const colors = { 'To Do': '#fee2e2', 'In Progress': '#fef3c7', 'Review': '#e9d5ff', 'Done': '#d1fae5' };
     return colors[status] || '#f3f4f6';
 };
 
-const TaskMenu = ({ task, onEdit, onDelete }) => (
+// TaskMenu 
+const TaskMenu = ({ task, onEdit, onDelete, onView }) => (
   <Menu>
-    <Menu.Item key="view" icon={<EyeOutlined />} onClick={() => console.log('View task', task.id)}>
+    <Menu.Item key="view" icon={<EyeOutlined />} onClick={() => onView(task)}>
       View Details
     </Menu.Item>
     <Menu.Item key="edit" icon={<EditOutlined />} onClick={() => onEdit(task)}>
@@ -40,6 +51,7 @@ const Home = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState(null); 
   const [editingTask, setEditingTask] = useState(null);
+  const [viewingTask, setViewingTask] = useState(null); 
   const [submitting, setSubmitting] = useState(false);
   const [hoveredTask, setHoveredTask] = useState(null); 
 
@@ -101,10 +113,17 @@ const Home = () => {
     });
     setIsModalVisible(true);
   };
+  
+  const handleOpenViewModal = (task) => {
+    setViewingTask(task);
+    setModalContent('view');
+    setIsModalVisible(true);
+  };
 
   const handleCancel = () => {
     setIsModalVisible(false);
     setEditingTask(null);
+    setViewingTask(null); 
   };
 
   const handleSubmit = async (values) => {
@@ -143,8 +162,8 @@ const Home = () => {
 
   const showDeleteConfirm = (taskId) => {
     Modal.confirm({
-        title: 'Are you sure you want to delete task?',
-        content: 'This action can not be undone.',
+        title: 'Are you sure you want to delete this task?',
+        content: 'This action cannot be undone.',
         okText: 'Yes, Delete',
         okType: 'danger',
         cancelText: 'Cancel',
@@ -199,7 +218,7 @@ const Home = () => {
                             <Space direction="vertical" style={{width: '100%'}}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <Text strong style={{ color: '#000', fontSize: '14px', flex: 1, marginRight: '8px' }}>{task.title}</Text>
-                                <Dropdown overlay={<TaskMenu task={task} onEdit={handleOpenEditModal} onDelete={showDeleteConfirm} />} trigger={['click']} placement="bottomRight">
+                                <Dropdown overlay={<TaskMenu task={task} onEdit={handleOpenEditModal} onDelete={showDeleteConfirm} onView={handleOpenViewModal} />} trigger={['click']} placement="bottomRight">
                                   <Button type="text" size="small" icon={<MoreOutlined />} style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s ease-in-out' }} onClick={(e) => e.stopPropagation()} />
                                 </Dropdown>
                               </div>
@@ -229,19 +248,13 @@ const Home = () => {
         </Layout>
       </div>
 
+      {/* Render Modal */}
       {isModalVisible && (
         <div 
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000,
+            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex',
+            justifyContent: 'center', alignItems: 'center', zIndex: 1000,
           }}
         >
           <div onClick={(e) => e.stopPropagation()}> 
@@ -263,6 +276,43 @@ const Home = () => {
                 submitting={submitting}
                 teamMembers={teamMembers}
               />
+            )}
+
+            {/* View Details */}
+            {modalContent === 'view' && viewingTask && (
+              <div style={{
+                  backgroundColor: 'white', borderRadius: '20px',
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)', padding: '40px',
+                  width: '600px',
+              }}>
+                <Title level={3} style={{ marginTop: 0 }}>{viewingTask.title}</Title>
+                <Descriptions bordered column={1} size="small" style={{ marginTop: '24px' }}>
+                  <Descriptions.Item label="Status">
+                    <Tag color={getStatusTagColor(viewingTask.status)}>{viewingTask.status}</Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Deadline">
+                    {viewingTask.dueDate !== 'No date' ? dayjs(viewingTask.dueDate, 'MMM D').format('dddd, D MMMM YYYY') : 'Not set'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Description">
+                    {viewingTask.description || <Text type="secondary">No description provided.</Text>}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Assigned To">
+                    <Avatar.Group>
+                      {viewingTask.members.map(memberId => {
+                        const member = getMemberById(memberId);
+                        return member ? (
+                          <Avatar key={memberId} style={{ backgroundColor: member.color || '#8b5cf6' }}>
+                            {member.username ? member.username.charAt(0).toUpperCase() : 'U'}
+                          </Avatar>
+                        ) : null;
+                      })}
+                    </Avatar.Group>
+                  </Descriptions.Item>
+                </Descriptions>
+                <div style={{ textAlign: 'right', marginTop: '24px' }}>
+                  <Button onClick={handleCancel}>Close</Button>
+                </div>
+              </div>
             )}
           </div>
         </div>
