@@ -50,7 +50,7 @@ const CreatePost = ({ onSuccess, onClose }) => {
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
       >
-                <Button 
+      <Button 
           type="text" 
           icon={<CloseOutlined />} 
           onClick={onClose}

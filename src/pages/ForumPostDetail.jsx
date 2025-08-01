@@ -6,7 +6,7 @@ const { Title, Paragraph } = Typography;
 const { Content } = Layout;
 
 const ForumPostDetail = () => {
-  const { postid } = useParams();
+  const { id } = useParams();
   const [hover, setHover] = useState(false);
 
   return (
@@ -26,7 +26,7 @@ const ForumPostDetail = () => {
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
           >
-            <Title level={3} style={{ color: 'white', margin: 0 }}>Post Detail (ID: {postid})</Title>
+            <Title level={3} style={{ color: 'white', margin: 0 }}>Post Detail (ID: {id})</Title>
             <Paragraph style={{ color: '#d1d5db', margin: 0 }}>
               This is the post detail page.
             </Paragraph>

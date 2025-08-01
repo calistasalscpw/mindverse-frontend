@@ -3,7 +3,7 @@ import { Button, Input, Typography, Pagination, Layout, Space, Modal } from 'ant
 import ForumPostCard from '../components/ForumPostCard';
 import CreatePost from './CreatePost';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar'; 
+import Navbar from '../components/Navbar';
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -50,13 +50,13 @@ const Forum = () => {
     <Layout style={{ minHeight: '100vh', fontFamily: 'Poppins', background: '#0f0c2a' }}>
 
 
-      <Content style={{ padding: '1rem', minHeight: '100vh' }}>
+      <Content style={{ padding: '2rem', minHeight: '100vh' }}>
         <div
           style={{
             width: '100%',
             color: 'white',
             minHeight: '100vh',
-            margin: '-20px 0 0 0',
+            margin: 0,
             padding: 0,
             boxSizing: 'border-box',
           }}
@@ -132,4 +132,4 @@ const Forum = () => {
   );
 };
 
-export default Forum;
+export default Forum; 
