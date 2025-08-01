@@ -1,21 +1,34 @@
 import React, { useState } from 'react';
 import { Button, Form, Input, Typography, message } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
+import API from '../api';
 
 const { Title } = Typography;
 
 const CreatePost = ({ onSuccess, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [hover, setHover] = useState(false);
+  const [form] = Form.useForm();
 
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
     setLoading(true);
-    console.log(values);
-    setTimeout(() => {
+    try {
+      const postData = {
+        title: values.title,
+        body: values.body
+      };
+
+      await API.post('/forum', postData, {withCredentials: true});
+
       message.success('Post created successfully!');
-      setLoading(false);
+      form.resetFields();
       if (onSuccess) onSuccess();
-    }, 1000);
+    } catch (error){
+      const errorMessage = error.response?.data?.message || 'Failed to create post. Please log in and try again.';
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -91,7 +104,7 @@ const CreatePost = ({ onSuccess, onClose }) => {
           </Form.Item>
           <Form.Item 
             label={<span style={{ color: 'white' }}>Content</span>} 
-            name="content" 
+            name="body" 
             rules={[{ required: true, message: 'Please enter content' }]}
           >
             <Input.TextArea 

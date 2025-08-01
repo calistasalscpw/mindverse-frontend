@@ -1,55 +1,57 @@
-import React, { useState } from 'react';
-import { Button, Input, Typography, Pagination, Layout, Space, Modal } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Button, Input, Typography, Pagination, Layout, Space, Modal, Spin } from 'antd';
 import ForumPostCard from '../components/ForumPostCard';
 import CreatePost from './CreatePost';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import API from '../api';
 
 const { Content } = Layout;
 const { Title } = Typography;
 
-const dummyPosts = [
-  {
-    id: 1,
-    author: 'David Kim',
-    title: 'Best practices for React state management in 2025',
-    content: 'I\'ve been working on a large React application...',
-    comments: 23,
-    initials: 'DK',
-    avatarColor: 'linear-gradient(to right, #60a5fa, #2563eb)',
-  },
-  {
-    id: 2,
-    author: 'Rachel Martinez',
-    title: 'How to create accessible color palettes for web applications',
-    content: 'Accessibility is crucial in modern web design...',
-    comments: 7,
-    initials: 'RM',
-    avatarColor: 'linear-gradient(to right, #34d399, #059669)',
-  },
-];
-
 const Forum = () => {
-  const [searchTerm, ] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [posts, setPosts] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const pageSize = 3;
   const navigate = useNavigate();
 
-  const filteredPosts = dummyPosts.filter(post =>
-    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.content.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('keyword') || '');
+  const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
+  const pageSize = 5;
 
-  const paginatedPosts = filteredPosts.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      try{
+        const response = await API.get(`/forum?keyword=${searchTerm}&page=${currentPage}&pageSize=${pageSize}`);
+        setPosts(response.data.data);
+        setTotal(response.data.total);
+      } catch (error){
+        console.error("Failed to fetch posts:", error)
+      } finally {
+        setLoading(false);
+      }
+    };
+
+      fetchPosts();
+      setSearchParams({ keyword: searchTerm, page: currentPage});
+  }, [searchTerm, currentPage, pageSize])
+
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    setCurrentPage(1); 
+  };
+
+  const handlePostCreated = () => {
+    setIsModalOpen(false);
+    setCurrentPage(1);
+    setSearchTerm('');
+  };
 
   return (
     <Layout style={{ minHeight: '100vh', fontFamily: 'Poppins', background: '#0f0c2a' }}>
-
-
       <Content style={{ padding: '2rem', minHeight: '100vh' }}>
         <div
           style={{
@@ -81,29 +83,32 @@ const Forum = () => {
               fontFamily: 'Poppins',
               transition: 'background 0.2s',
             }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.16)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
             onClick={() => setIsModalOpen(true)}
           >
             What do you want to share?
           </button>
 
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '50px'}}>
+              <Spin size='large'/>
+            </div>
+          ) : (
           <Space direction="vertical" style={{ width: '100%' }}>
-            {paginatedPosts.map(post => (
-              <ForumPostCard key={post.id} post={post} onClick={(id) => navigate(`/forum/${id}`)} />
+            {posts.map(post => (
+              <ForumPostCard key={post._id} post={post} onClick={(id) => navigate(`/forum/${id}`)} />
             ))}
           </Space>
+          )}
 
           <Pagination
             current={currentPage}
-            total={filteredPosts.length}
+            total={total}
             pageSize={pageSize}
             onChange={(page) => setCurrentPage(page)}
             style={{
               marginTop: 20,
               display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
+              justifyContent: 'center'
             }}
           />
 
@@ -116,15 +121,16 @@ const Forum = () => {
             width={720}
             style={{ background: 'transparent', boxShadow: 'none', padding: 0 }}
             bodyStyle={{ background: '#1f1c3a', borderRadius: 16, padding: 0 }}
-            modalRender={modal => (
-              <div style={{ background: 'transparent', boxShadow: 'none', padding: 0 }}>
-                {modal}
-              </div>
-            )}
+            // modalRender={modal => (
+            //   <div style={{ background: 'transparent', boxShadow: 'none', padding: 0 }}>
+            //     {modal}
+            //   </div>
+            // )}
           >
             <CreatePost 
-            onSuccess={() => setIsModalOpen(false)}
-            onClose={() => setIsModalOpen(false)} />
+              onSuccess={handlePostCreated}
+              onClose={() => setIsModalOpen(false)} 
+            />
           </Modal>
         </div>
       </Content>
