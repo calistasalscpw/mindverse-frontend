@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Card, Avatar, Button, Badge, Space, Typography, Dropdown, Menu, Spin, Form, message } from 'antd';
-import { PlusOutlined, MoreOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Layout, Card, Avatar, Button, Badge, Space, Typography, Dropdown, Menu, Spin, Form, message, Modal } from 'antd';
+import { PlusOutlined, MoreOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import API from '../api.js';
 
 import TaskCreate from '../components/TaskCreate';
 import TaskEdit from '../components/TaskEdit';
@@ -14,7 +15,7 @@ const getCardColorForStatus = (status) => {
 
 const TaskMenu = ({ task, onEdit, onDelete }) => (
   <Menu>
-    <Menu.Item key="view" icon={<EyeOutlined />} onClick={() => console.log('View task', taskId)}>
+    <Menu.Item key="view" icon={<EyeOutlined />} onClick={() => console.log('View task', task.id)}>
       View Details
     </Menu.Item>
     <Menu.Item key="edit" icon={<EditOutlined />} onClick={() => onEdit(task)}>
@@ -48,8 +49,8 @@ const Home = () => {
     setLoading(true);
     try {
       const [usersResponse, tasksResponse] = await Promise.all([
-        axios.get('http://localhost:5000/api/users'), 
-        axios.get('http://localhost:5000/api/tasks')  
+        API.get('/auth'), 
+        API.get('/tasks')  
       ]);
       
       setTeamMembers(usersResponse.data);
@@ -62,7 +63,7 @@ const Home = () => {
             id: task._id,
             title: task.name,
             description: task.description,
-            dueDate: task.dueDate ? dayjs(task.dueDate).format('MMM D') : null,
+            dueDate: task.dueDate ? dayjs(task.dueDate).format('MMM D') : 'No date',
             members: task.assignTo,
             status: status,
             cardColor: getCardColorForStatus(status)
@@ -71,8 +72,8 @@ const Home = () => {
       });
       setTaskColumns(newColumns);
     } catch (error) {
-      console.error("Gagal mengambil data:", error);
-      message.error('Gagal memuat data. Pastikan server backend berjalan.');
+      console.error("Failed to fetch data:", error);
+      message.error('Failed to load data. Please make sure the backend server is running.');
     } finally {
       setLoading(false);
     }
@@ -91,36 +92,40 @@ const Home = () => {
   const handleOpenEditModal = (task) => {
     setEditingTask(task);
     setModalContent('edit');
+    form.setFieldsValue({
+      name: task.title,
+      description: task.description,
+      assignTo: task.members,
+      dueDate: task.dueDate !== 'No date' ? dayjs(task.dueDate, 'MMM D') : null,
+      progressStatus: task.status
+    });
     setIsModalVisible(true);
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
+    setEditingTask(null);
   };
 
   const handleSubmit = async (values) => {
     setSubmitting(true);
     const payload = {
-      name: values.name,
-      description: values.description,
-      assignTo: values.assignTo,
+      ...values,
       dueDate: values.dueDate ? values.dueDate.toISOString() : null,
     };
 
     try {
       if (modalContent === 'create') {
-        payload.progressStatus = 'ToDo';
-        await axios.post('http://localhost:5000/api/tasks', payload);
-        message.success('Task berhasil dibuat!');
+        await API.post('/tasks', payload);
+        message.success('Task created successfully!');
       } else {
-        payload.progressStatus = values.progressStatus;
-        await axios.put(`http://localhost:5000/api/tasks/${editingTask.id}`, payload);
-        message.success('Task berhasil diperbarui!');
+        await API.put(`/tasks/${editingTask.id}`, payload);
+        message.success('Task updated successfully!');
       }
       setIsModalVisible(false);
       fetchData();
     } catch (error) {
-      message.error(error.response?.data?.message || 'Operasi gagal!');
+      message.error(error.response?.data?.message || 'An error occured!');
     } finally {
       setSubmitting(false);
     }
@@ -128,21 +133,21 @@ const Home = () => {
 
   const handleDeleteTask = async (taskId) => {
     try {
-        await axios.delete(`http://localhost:5000/api/tasks/${taskId}`);
-        message.success('Task berhasil dihapus!');
+        await API.delete(`/tasks/${taskId}`);
+        message.success('Task deleted successfully!');
         fetchData();
     } catch (error) {
-        message.error(error.response?.data?.message || 'Gagal menghapus task.');
+        message.error(error.response?.data?.message || 'Failed to delete task.');
     }
   };
 
   const showDeleteConfirm = (taskId) => {
     Modal.confirm({
-        title: 'Apakah Anda yakin ingin menghapus task ini?',
-        content: 'Tindakan ini tidak dapat dibatalkan.',
-        okText: 'Ya, Hapus',
+        title: 'Are you sure you want to delete task?',
+        content: 'This action can not be undone.',
+        okText: 'Yes, Delete',
         okType: 'danger',
-        cancelText: 'Batal',
+        cancelText: 'Cancel',
         onOk: () => handleDeleteTask(taskId),
     });
   };
@@ -160,11 +165,11 @@ const Home = () => {
                 <div key={member._id} style={{ display: 'flex', alignItems: 'center' }}>
                   <Badge dot color={member.status === 'online' ? '#10b981' : '#d1d5db'} offset={[-5, 28]}>
                     <Avatar style={{ backgroundColor: member.color || '#8b5cf6', color: 'white' }}>
-                      {member.name.match(/\b(\w)/g).join('')}
+                      {member.username ? member.username.match(/\b(\w)/g).join('') : 'U'}
                     </Avatar>
                   </Badge>
                   <div style={{ marginLeft: '12px' }}>
-                    <Text style={{ fontWeight: 500, color: '#000' }}>{member.name}</Text>
+                    <Text style={{ fontWeight: 500, color: '#000' }}>{member.username}</Text>
                     <br />
                     <Text type="secondary" style={{ fontSize: '12px' }}>{member.role || 'Member'}</Text>
                   </div>
@@ -203,7 +208,7 @@ const Home = () => {
                                 <Avatar.Group maxCount={2} size="small">
                                   {task.members.map(memberId => {
                                     const member = getMemberById(memberId);
-                                    return member ? <Avatar key={memberId} style={{ backgroundColor: member.color || '#8b5cf6', color: 'white', fontSize: '10px' }}>{member.name.match(/\b(\w)/g).join('')}</Avatar> : null;
+                                    return member ? <Avatar key={memberId} style={{ backgroundColor: member.color || '#8b5cf6', color: 'white', fontSize: '10px' }}>{member.username ? member.username.match(/\b(\w)/g).join(''): 'U'}</Avatar> : null;
                                   })}
                                 </Avatar.Group>
                                 <Text type="secondary" style={{ fontSize: '11px', color: '#666' }}>{task.dueDate}</Text>
