@@ -70,7 +70,7 @@ function TaskCreate({ form, onFinish, onCancel, submitting, teamMembers = [] }) 
             mode="multiple"
             placeholder="Assign To"
             allowClear
-            options={teamMembers.map(user => ({ label: user.username, value: user._id }))}
+            options={teamMembers.map(user => ({ label: `${user.username} (${user.email})`, value: user._id }))}
           />
         </Form.Item>
 

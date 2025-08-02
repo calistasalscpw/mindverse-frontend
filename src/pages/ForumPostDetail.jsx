@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Layout, Spin, Avatar, Space, Divider } from 'antd';
+import { Typography, Layout, Spin, Avatar, Space, Divider, List } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import API from '../api';
 
@@ -16,6 +16,7 @@ const formatDate = (dateString) => {
 const ForumPostDetail = () => {
   const { postId} = useParams();
   const [post, setPost] = useState(null);
+  const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [hover, setHover] = useState(false);
@@ -26,6 +27,7 @@ const ForumPostDetail = () => {
         setLoading(true);
         const response = await API.get(`/forum/${postId}`);
         setPost(response.data);
+        setComments(response.data.comments || []);
       } catch (err) {
         setError('Failed to load post. It may have been deleted or the link is incorrect.');
         console.error("Failed to fetch post:", err);
@@ -89,6 +91,23 @@ const ForumPostDetail = () => {
             <Paragraph style={{ color: '#d1d5db', fontSize: '16px', lineHeight: '1.7', whiteSpace: 'pre-wrap' }}>
               {post.body}
             </Paragraph>
+
+            <Divider style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+
+            <Title level={4} style={{ color: 'white' }}>Comments</Title>
+            <List
+              dataSource={comments}
+              itemLayout="horizontal"
+              renderItem={item => (
+                <List.Item>
+                  <List.Item.Meta
+                    avatar={<Avatar>{item.name.charAt(0)}</Avatar>}
+                    title={<Text style={{ color: 'white' }}>{item.name}</Text>}
+                    description={<Text style={{ color: '#d1d5db' }}>{item.body}</Text>}
+                  />
+                </List.Item>
+              )}
+            />
           </div>
         </div>
       </Content>

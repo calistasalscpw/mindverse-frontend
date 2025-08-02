@@ -134,7 +134,8 @@ const Home = () => {
       endTasks.splice(destination.index, 0, updatedTask);
       newColumnsState[sourceColId] = { ...startCol, tasks: startTasks };
       newColumnsState[destColId] = { ...endCol, tasks: endTasks };
-      handleUpdateTaskStatus(removed.id, destColId);
+      
+      handleUpdateTaskStatus(removed.id, destColId, removed);
     }
     setTaskColumns(newColumnsState);
   };
@@ -159,6 +160,7 @@ const Home = () => {
       fetchData();
     } catch (error) {
       message.error(error.response?.data?.message || 'An error occured!');
+      message.error(error.message)
     } finally {
       setSubmitting(false);
     }
