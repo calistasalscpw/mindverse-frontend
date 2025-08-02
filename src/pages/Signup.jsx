@@ -3,7 +3,7 @@ import {LockOutlined, UserOutlined, MailOutlined, GoogleOutlined, LoadingOutline
 import { Button, Form, Divider, Input, Card, message, Upload, Flex } from "antd";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
-import { inline } from './../../node_modules/@rc-component/portal/es/mock';
+// import { inline } from './../../node_modules/@rc-component/portal/es/mock';
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -47,17 +47,21 @@ const Signup = () => {
 
     const onFinish = async (values) => {
         const formData = new FormData();
-        formData.append("username", values.username);
-        formData.append("email", values.email);
-        formData.append("password", values.password);
+        // formData.append("username", values.username);
+        // formData.append("email", values.email);
+        // formData.append("password", values.password);
+
+        const userData = {
+            username: values.username,
+            email: values.email,
+            password: values.password
+        }
+
         if (file) formData.append("profileImageUrl", file);
 
         try{
-            const res = await API.post('/auth/signup', {
-                method: 'POST',
-                body: formData,
-            });
-            if (!res.ok) throw new Error("Signup failed");
+            const res = await API.post('/auth/signup', userData);
+            // if (!res.ok) throw new Error("Signup failed");
             message.success("Signup successful!");
             navigate('/auth/login');
         } catch (error){
@@ -70,7 +74,7 @@ const Signup = () => {
     }
 
     return(
-        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '90vh'}}>
+        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '90vh', margin: '2rem 1rem 2rem 1rem'}}>
             <Card title="Sign Up" style={{ width: 400 }} headStyle={{ textAlign: 'center', color: '#602080' }}>
                 <Form name="signup" onFinish={onFinish} autoComplete="off" >
                     <Flex gap="middle" wrap justify="center" style={{ marginBottom: '1rem'}}>
@@ -85,16 +89,55 @@ const Signup = () => {
                     </Flex>
                     
                     <Form.Item name="username" rules={[{required: true, message: "Please input your username!"}]}>
-                        <Input prefix={<UserOutlined/>} placeholder="Username"/>
+                        <Input 
+                            prefix={<UserOutlined/>} 
+                            placeholder="Username"
+                            style={{
+                                borderRadius: '6px',
+                                height: '40px',
+                                borderColor: '#d1d5db',
+                                fontSize: '14px',
+                            }}
+                        />
                     </Form.Item>
                     <Form.Item name="email" rules={[{required: true, type: 'email', message: "Please input a valid E-mail!"}]}>
-                        <Input prefix={<MailOutlined/>} placeholder="E-mail"/>
+                        <Input 
+                            prefix={<MailOutlined/>} 
+                            placeholder="E-mail"
+                            style={{
+                                borderRadius: '6px',
+                                height: '40px',
+                                borderColor: '#d1d5db',
+                                fontSize: '14px',
+                            }}
+                        />
                     </Form.Item>
                     <Form.Item name="password" rules={[{ required: true, message: "Please input your Password!" }]}>
-                        <Input prefix={<LockOutlined />} type="password" placeholder="Password" />
+                        <Input 
+                            prefix={<LockOutlined />} 
+                            type="password" 
+                            placeholder="Password" 
+                            style={{
+                                borderRadius: '6px',
+                                height: '40px',
+                                borderColor: '#d1d5db',
+                                fontSize: '14px',
+                            }}
+                        />
                     </Form.Item>
                     <Form.Item>
-                        <Button block htmlType="submit" style={{background: 'linear-gradient(to right, #45056E, #8F1383)', border: 'none', color: 'white', fontWeight: 'bold'}}>Sign Up</Button>
+                        <Button 
+                            block 
+                            htmlType="submit" 
+                            style={{
+                                background: 'linear-gradient(to right, #45056E, #8F1383)', 
+                                border: 'none', 
+                                color: 'white', 
+                                borderRadius: '25px',
+                                height: '48px',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                            }}>Sign Up</Button>
                     </Form.Item>
                 </Form>
                 <Divider>Or</Divider>
