@@ -85,7 +85,7 @@ const CreatePost = ({ onSuccess, onClose }) => {
         />
         
         <Title level={3} style={{ color: 'white', marginBottom: 24 }}>Create New Post</Title>
-        <Form layout="vertical" onFinish={handleSubmit}>
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item 
             label={<span style={{ color: 'white' }}>Title</span>} 
             name="title" 
