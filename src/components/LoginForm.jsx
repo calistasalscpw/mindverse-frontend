@@ -1,4 +1,4 @@
-import { Form, Input, Button, Typography } from 'antd';
+import { Form, Input, Button, Typography, message } from 'antd';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
@@ -23,7 +23,7 @@ const LoginForm = () => {
         localStorage.setItem('user', JSON.stringify(response.data.user));
         
         message.success('Login successful!');
-        navigate('/dashboard'); 
+        navigate('/'); 
       } else {
         message.error('Login failed. Please try again.');
       }
