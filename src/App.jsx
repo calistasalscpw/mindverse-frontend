@@ -10,6 +10,7 @@ import TaskEdit from './components/TaskEdit';
 import Forum from './pages/Forum';
 import ForumPostDetail from './pages/ForumPostDetail';
 
+import { AuthProvider } from './context/AuthContext';
 import ChatBot from './components/chatBot';
 import { Layout } from 'antd';
 const { Content } = Layout;
@@ -25,6 +26,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <AuthProvider>
       <Layout style={{ minHeight: '100vh', background: '#0f0c2a' }}>
         <Navbar />
         <Content style={{ 
@@ -45,6 +47,7 @@ function App() {
         </Content>
         <ChatBot />
       </Layout>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

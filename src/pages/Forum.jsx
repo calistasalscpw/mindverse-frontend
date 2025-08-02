@@ -19,7 +19,7 @@ const Forum = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('keyword') || '');
   const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
-  const pageSize = 5;
+  const [pageSize, setPageSize] = useState(Number(searchParams.get('pageSize')) || 5);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -37,7 +37,7 @@ const Forum = () => {
   useEffect(() => {
       fetchPosts();
       setSearchParams({ keyword: searchTerm, page: currentPage});
-  }, [searchTerm, currentPage, pageSize])
+  }, [searchParams])
 
   const handleSearch = (value) => {
     setSearchTerm(value);
