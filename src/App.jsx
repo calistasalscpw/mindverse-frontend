@@ -5,10 +5,11 @@ import Home from './pages/Home';
 import Signup from './pages/Signup.jsx';
 import Login from './pages/Login.jsx';
 import Navbar from './components/Navbar.jsx';
-import TaskCreate from './pages/TaskCreate';
-import TaskEdit from './pages/TaskEdit';
+import TaskCreate from './components/TaskCreate';
+import TaskEdit from './components/TaskEdit';
 import Forum from './pages/Forum';
 import ForumPostDetail from './pages/ForumPostDetail';
+
 import ChatBot from './components/chatBot';
 import { Layout } from 'antd';
 const { Content } = Layout;
