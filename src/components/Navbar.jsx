@@ -1,15 +1,26 @@
 import { Layout, Menu, Input, Space, Avatar, Dropdown } from "antd";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from '../context/AuthContext';
 
 const { Header } = Layout;
 
 const Navbar = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSearch = (value) => {
+    if (value) {
+      navigate(`/forum?keyword=${value}`);
+    } else {
+      navigate('/forum');
+    }
+  };
 
   const profileMenu = (
     <Menu>
-      <Menu.Item key="logout" onClick={() => {}}>
+      <Menu.Item key="logout" onClick={logout}>
         Logout
       </Menu.Item>
     </Menu>
@@ -51,7 +62,7 @@ const Navbar = () => {
           </Link>
           <Space size="large">
             <Link
-              to="/dashboard"
+              to="/"
               style={{ color: "white", fontWeight: 500 }}
             >
               Dashboard
@@ -82,6 +93,8 @@ const Navbar = () => {
           />
         </div>
 
+        <div>
+          {user ? (
         <Dropdown
           overlay={profileMenu}
           placement="bottomRight"
@@ -97,17 +110,22 @@ const Navbar = () => {
               borderRadius: 24,
               transition: "background 0.2s",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = "rgba(255,255,255,0.08)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = "transparent")
-            }
           >
-            <Avatar src="" />
-            <span style={{ color: "white", fontWeight: 500 }}>Ayam</span>
+            <Avatar src={user.profileImageUrl || ''} />
+            <span style={{ color: "white", fontWeight: 500 }}>{user.username}</span>
           </div>
         </Dropdown>
+          ) : (
+            <Space>
+              <Link to="/auth/login" style={{ color: "white", fontWeight: 500 }}>
+                Login
+              </Link>
+              <Link to="/auth/signup" style={{ color: "white", fontWeight: 500 }}>
+                Sign Up
+              </Link>
+            </Space>
+          )}
+        </div>
       </div>
     </Header>
   );

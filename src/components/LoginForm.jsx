@@ -1,36 +1,22 @@
 import { Form, Input, Button, Typography, message } from 'antd';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import API from '../api';
+import { useAuth } from '../context/AuthContext';
+
 
 const { Title, Text } = Typography;
 
 const LoginForm = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const onFinish = async (values) => {
     setLoading(true);
-    // Di sini nanti bisa tambahkan logic untuk call API login
 
     try {
-      const response = await API.post('/auth/login', values, {
-        withCredentials: true,
-      });
-
-      if (response.data && response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        
-        message.success('Login successful!');
-        navigate('/'); 
-      } else {
-        message.error('Login failed. Please try again.');
-      }
+      await login(values)
     } catch (error){
-      const errorMessage =
-        error.response?.data?.message || 'Login failed. Please try again.';
-      message.error(errorMessage);
+      console.error('Login failed:', error);
     } finally {
       setLoading(false);
     }

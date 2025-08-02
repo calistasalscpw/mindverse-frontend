@@ -7,6 +7,7 @@ import API from '../api.js';
 
 import TaskCreate from '../components/TaskCreate';
 import TaskEdit from '../components/TaskEdit';
+import { useAuth } from '../context/AuthContext';
 
 // --- Helper functions for styling and menu creation ---
 const getStatusTagColor = (status) => {
@@ -19,18 +20,27 @@ const getCardColorForStatus = (status) => {
   return colors[status] || '#f3f4f6';
 };
 
-const getTaskMenuItems = (task, onEdit, onDelete, onView) => [
-  { key: 'view', label: 'View Details', icon: <EyeOutlined />, onClick: () => onView(task) },
-  { key: 'edit', label: 'Edit Task', icon: <EditOutlined />, onClick: () => onEdit(task) },
-  { type: 'divider' },
-  { key: 'delete', label: 'Delete Task', icon: <DeleteOutlined />, danger: true, onClick: () => onDelete(task.id) },
-];
+const getTaskMenuItems = (task, onEdit, onDelete, onView, user) => {
+  const items = [
+    { key: 'view', label: 'View Details', icon: <EyeOutlined />, onClick: () => onView(task) }
+  ]
+  
+  if (user?.isLead || user?.isHR) {
+    items.push(
+      { key: 'edit', label: 'Edit Task', icon: <EditOutlined />, onClick: () => onEdit(task) },
+      { type: 'divider' },
+      { key: 'delete', label: 'Delete Task', icon: <DeleteOutlined />, danger: true, onClick: () => onDelete(task.id) },
+    );
+  }
+  return items;
+};
 
 
 const Home = () => {
   const { Sider, Content } = Layout;
   const { Title, Text } = Typography;
   const [form] = Form.useForm();
+  const { user, loading: authLoading } = useAuth();
 
   // --- Component state ---
   const [taskColumns, setTaskColumns] = useState({ 'To Do': { name: 'To Do', color: '#ef4444', tasks: [] }, 'In Progress': { name: 'In Progress', color: '#f59e0b', tasks: [] }, 'Review': { name: 'Review', color: '#8b5cf6', tasks: [] }, 'Done': { name: 'Done', color: '#10b981', tasks: [] } });
@@ -81,10 +91,19 @@ const Home = () => {
   // --- Event handlers for tasks, modals, and drag-and-drop ---
   const getMemberById = (id) => teamMembers.find(m => m._id === id);
 
-  const handleUpdateTaskStatus = async (taskId, newStatus) => {
+  const handleUpdateTaskStatus = async (taskId, newStatus, currentTask) => {
     const backendStatus = newStatus === 'To Do' ? 'ToDo' : newStatus;
+
+    const payload = {
+      name: currentTask.title,
+      description: currentTask.description,
+      assignTo: currentTask.members,
+      dueDate: currentTask.dueDate !== 'No date' ? dayjs(currentTask.dueDate, 'MMM D').toISOString() : null,
+      progressStatus: backendStatus,
+    };
+
     try {
-      await API.patch(`/tasks/${taskId}/status`, { progressStatus: backendStatus });
+      await API.put(`/tasks/${taskId}`, payload);
     } catch (error) {
       message.error('Failed to update task status. Reverting changes.');
       fetchData();
@@ -115,7 +134,8 @@ const Home = () => {
       endTasks.splice(destination.index, 0, updatedTask);
       newColumnsState[sourceColId] = { ...startCol, tasks: startTasks };
       newColumnsState[destColId] = { ...endCol, tasks: endTasks };
-      handleUpdateTaskStatus(removed.id, destColId);
+      
+      handleUpdateTaskStatus(removed.id, destColId, removed);
     }
     setTaskColumns(newColumnsState);
   };
@@ -140,6 +160,7 @@ const Home = () => {
       fetchData();
     } catch (error) {
       message.error(error.response?.data?.message || 'An error occured!');
+      message.error(error.message)
     } finally {
       setSubmitting(false);
     }
@@ -167,7 +188,7 @@ const Home = () => {
   };
   
   // --- Main component render ---
-  if (loading) {
+  if (loading || authLoading) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><Spin size="large" /></div>;
   }
 
@@ -231,7 +252,7 @@ const Home = () => {
                                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <Text strong style={{ color: '#000', fontSize: '14px', flex: 1, marginRight: '8px' }}>{task.title}</Text>
                                         <Dropdown
-                                          menu={{ items: getTaskMenuItems(task, handleOpenEditModal, showDeleteConfirm, handleOpenViewModal) }}
+                                          menu={{ items: getTaskMenuItems(task, handleOpenEditModal, showDeleteConfirm, handleOpenViewModal, user) }}
                                           trigger={['click']}
                                           placement="bottomRight"
                                         >
@@ -255,8 +276,11 @@ const Home = () => {
                             </Draggable>
                           ))}
                           {provided.placeholder}
+                        {(user?.isLead || user?.isHR) && (
+                          <Button type="dashed" block icon={<PlusOutlined />} style={{ marginTop: 'auto', flexShrink: 0 }} onClick={handleOpenCreateModal}>Add Task</Button>
+                        )}
                         </div>
-                        <Button type="dashed" block icon={<PlusOutlined />} style={{ marginTop: 'auto', flexShrink: 0 }} onClick={handleOpenCreateModal}>Add Task</Button>
+
                       </div>
                     )}
                   </Droppable>
