@@ -65,12 +65,12 @@ function TaskCreate({ form, onFinish, onCancel, submitting, teamMembers = [] }) 
           </Col>
         </Row>
 
-        <Form.Item label="Assign To" name="assignTo" rules={[{ required: true }]}>
+        <Form.Item label="Assign To" name="assignTo" rules={[{ required: true }]}> 
           <Select
             mode="multiple"
             placeholder="Assign To"
             allowClear
-            options={teamMembers.map(user => ({ label: user._email, value: user._email }))}
+            options={teamMembers.map(user => ({ label: user.username, value: user._id }))}
           />
         </Form.Item>
 

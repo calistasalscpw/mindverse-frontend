@@ -65,12 +65,12 @@ function TaskEdit({ form, onFinish, onCancel, submitting, teamMembers = [] }) {
           </Col>
         </Row>
 
-        <Form.Item label="Assign To" name="assignTo" rules={[{ required: true }]}>
+        <Form.Item label="Assign To" name="assignTo" rules={[{ required: true }]}> 
           <Select
             mode="multiple"
             placeholder="Assign To"
             allowClear
-            options={teamMembers.map(user => ({ label: user.email, value: user.email }))}
+            options={teamMembers.map(user => ({ label: `${user.username} (${user.email})`, value: user._id }))}
           />
         </Form.Item>
 
