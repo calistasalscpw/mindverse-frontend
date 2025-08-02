@@ -21,20 +21,20 @@ const Forum = () => {
   const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
   const pageSize = 5;
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      try{
-        const response = await API.get(`/forum?keyword=${searchTerm}&page=${currentPage}&pageSize=${pageSize}`);
-        setPosts(response.data.data);
-        setTotal(response.data.total);
-      } catch (error){
-        console.error("Failed to fetch posts:", error)
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchPosts = async () => {
+    setLoading(true);
+    try{
+      const response = await API.get(`/forum?keyword=${searchTerm}&page=${currentPage}&pageSize=${pageSize}`);
+      setPosts(response.data.data);
+      setTotal(response.data.total);
+    } catch (error){
+      console.error("Failed to fetch posts:", error)
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
       fetchPosts();
       setSearchParams({ keyword: searchTerm, page: currentPage});
   }, [searchTerm, currentPage, pageSize])
@@ -46,7 +46,11 @@ const Forum = () => {
 
   const handlePostCreated = () => {
     setIsModalOpen(false);
-    setCurrentPage(1);
+    if (currentPage !== 1){
+      setCurrentPage(1);
+    } else {
+      fetchPosts();
+    }
     setSearchTerm('');
   };
 
