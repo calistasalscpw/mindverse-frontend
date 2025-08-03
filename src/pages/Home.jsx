@@ -91,6 +91,12 @@ const Home = () => {
   // --- Event handlers for tasks, modals, and drag-and-drop ---
   const getMemberById = (id) => teamMembers.find(m => m._id === id);
 
+  const getRoleName = (member) => {
+    if (member.isLead) return 'Lead';
+    if (member.isHR) return 'HR';
+    return 'Member';
+  };
+
   const handleUpdateTaskStatus = async (taskId, newStatus, currentTask) => {
     const backendStatus = newStatus === 'To Do' ? 'ToDo' : newStatus;
 
@@ -206,7 +212,7 @@ const Home = () => {
                   </Badge>
                   <div style={{ marginLeft: '12px' }}>
                     <Text style={{ fontWeight: 500, color: '#000' }}>{member.username}</Text><br />
-                    <Text type="secondary" style={{ fontSize: '12px' }}>{member.role || 'Member'}</Text>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>{getRoleName(member)}</Text>
                   </div>
                 </div>
               ))}
