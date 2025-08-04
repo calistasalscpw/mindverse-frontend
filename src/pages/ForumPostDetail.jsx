@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Layout, Spin, Avatar, Space, Divider, List } from 'antd';
+import { Typography, Layout, Spin, Avatar, Space, Divider, List, Button } from 'antd'; // Ditambahkan: Button
 import { UserOutlined } from '@ant-design/icons';
+import { useAuth } from '../context/AuthContext'; 
+import CommentForm from '../components/CommentForm'; 
 import API from '../api';
 
 const { Title, Paragraph, Text } = Typography;
@@ -14,12 +16,14 @@ const formatDate = (dateString) => {
 };
 
 const ForumPostDetail = () => {
+  const { user } = useAuth(); 
   const { postId} = useParams();
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [hover, setHover] = useState(false);
+  const [isFormVisible, setIsFormVisible] = useState(false); 
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -41,6 +45,17 @@ const ForumPostDetail = () => {
     }
   }, [postId]);
 
+  // Add: Handler for comment submission
+  const handleCommentAdded = (newComment) => {
+    setComments(prevComments => [...prevComments, newComment]);
+    setIsFormVisible(false); 
+  };
+
+  // Add: Handler for canceling comment form
+  const handleCancelComment = () => {
+    setIsFormVisible(false);
+  };
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 'calc(100vh - 64px)' }}>
@@ -51,7 +66,7 @@ const ForumPostDetail = () => {
 
   if (error) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px', color: 'white' }}>
+      <div style={{ textAlign: 'center', padding: '50px' }}>
         <Title level={4} style={{ color: 'white' }}>{error}</Title>
       </div>
     );
@@ -94,20 +109,38 @@ const ForumPostDetail = () => {
 
             <Divider style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
 
-            <Title level={4} style={{ color: 'white' }}>Comments</Title>
+            <Title level={4} style={{ color: 'white' }}>Comments ({comments.length})</Title>
             <List
               dataSource={comments}
               itemLayout="horizontal"
               renderItem={item => (
                 <List.Item>
                   <List.Item.Meta
-                    avatar={<Avatar>{item.name.charAt(0)}</Avatar>}
+                    avatar={<Avatar>{item.name.charAt(0).toUpperCase()}</Avatar>}
                     title={<Text style={{ color: 'white' }}>{item.name}</Text>}
                     description={<Text style={{ color: '#d1d5db' }}>{item.body}</Text>}
                   />
                 </List.Item>
               )}
             />
+            
+            <Divider style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+
+            {/* Add: Logic for showing comment form */}
+            {!isFormVisible && (
+              <Button type="primary" onClick={() => setIsFormVisible(true)}>
+                Add Comment
+              </Button>
+            )}
+
+            {isFormVisible && (
+              <CommentForm 
+                postId={postId} 
+                onCommentSubmit={handleCommentAdded}
+                currentUser={user}
+                onCancel={handleCancelComment}
+              />
+            )}
           </div>
         </div>
       </Content>
