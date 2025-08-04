@@ -36,8 +36,8 @@ const Forum = () => {
 
   useEffect(() => {
       fetchPosts();
-      setSearchParams({ keyword: searchTerm, page: currentPage});
-  }, [searchParams])
+      setSearchParams({ keyword: searchTerm, page: currentPage, pageSize: pageSize });
+  }, [currentPage, searchTerm, pageSize])
 
   const handleSearch = (value) => {
     setSearchTerm(value);
@@ -108,7 +108,10 @@ const Forum = () => {
             current={currentPage}
             total={total}
             pageSize={pageSize}
-            onChange={(page) => setCurrentPage(page)}
+            onChange={(page, size) => {
+              setCurrentPage(page);
+              setPageSize(size);
+            }}
             style={{
               marginTop: 20,
               display: 'flex',

@@ -91,19 +91,17 @@ const Home = () => {
   // --- Event handlers for tasks, modals, and drag-and-drop ---
   const getMemberById = (id) => teamMembers.find(m => m._id === id);
 
-  const handleUpdateTaskStatus = async (taskId, newStatus, currentTask) => {
+  const getRoleName = (member) => {
+    if (member.isLead) return 'Lead';
+    if (member.isHR) return 'HR';
+    return 'Member';
+  };
+
+  const handleUpdateTaskStatus = async (taskId, newStatus) => {
     const backendStatus = newStatus === 'To Do' ? 'ToDo' : newStatus;
 
-    const payload = {
-      name: currentTask.title,
-      description: currentTask.description,
-      assignTo: currentTask.members,
-      dueDate: currentTask.dueDate !== 'No date' ? dayjs(currentTask.dueDate, 'MMM D').toISOString() : null,
-      progressStatus: backendStatus,
-    };
-
     try {
-      await API.put(`/tasks/${taskId}`, payload);
+      await API.patch(`/tasks/${taskId}/status`, { progressStatus: backendStatus });
     } catch (error) {
       message.error('Failed to update task status. Reverting changes.');
       fetchData();
@@ -135,7 +133,7 @@ const Home = () => {
       newColumnsState[sourceColId] = { ...startCol, tasks: startTasks };
       newColumnsState[destColId] = { ...endCol, tasks: endTasks };
       
-      handleUpdateTaskStatus(removed.id, destColId, removed);
+      handleUpdateTaskStatus(removed.id, destColId);
     }
     setTaskColumns(newColumnsState);
   };
@@ -206,7 +204,7 @@ const Home = () => {
                   </Badge>
                   <div style={{ marginLeft: '12px' }}>
                     <Text style={{ fontWeight: 500, color: '#000' }}>{member.username}</Text><br />
-                    <Text type="secondary" style={{ fontSize: '12px' }}>{member.role || 'Member'}</Text>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>{getRoleName(member)}</Text>
                   </div>
                 </div>
               ))}
