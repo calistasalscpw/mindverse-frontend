@@ -1,4 +1,5 @@
-import { Form, Input, Button, Typography, message } from 'antd';
+import { Form, Input, Button, Typography, message, Divider } from 'antd';
+import { GoogleOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
@@ -20,6 +21,10 @@ const LoginForm = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+        window.location.href = 'http://localhost:3000/auth/login/google';
   };
 
   return (
@@ -126,6 +131,11 @@ const LoginForm = () => {
           </Button>
         </Form.Item>
       </Form>
+
+      <Divider>Or</Divider>
+      <Button block icon={<GoogleOutlined />} onClick={handleGoogleLogin} size="large" style={{ borderRadius: '25px', height: '48px' }}>
+        Login with Google
+      </Button>
     </div>
   );
 };
