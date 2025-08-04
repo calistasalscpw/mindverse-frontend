@@ -97,19 +97,11 @@ const Home = () => {
     return 'Member';
   };
 
-  const handleUpdateTaskStatus = async (taskId, newStatus, currentTask) => {
+  const handleUpdateTaskStatus = async (taskId, newStatus) => {
     const backendStatus = newStatus === 'To Do' ? 'ToDo' : newStatus;
 
-    const payload = {
-      name: currentTask.title,
-      description: currentTask.description,
-      assignTo: currentTask.members,
-      dueDate: currentTask.dueDate !== 'No date' ? dayjs(currentTask.dueDate, 'MMM D').toISOString() : null,
-      progressStatus: backendStatus,
-    };
-
     try {
-      await API.put(`/tasks/${taskId}`, payload);
+      await API.patch(`/tasks/${taskId}/status`, { progressStatus: backendStatus });
     } catch (error) {
       message.error('Failed to update task status. Reverting changes.');
       fetchData();
@@ -141,7 +133,7 @@ const Home = () => {
       newColumnsState[sourceColId] = { ...startCol, tasks: startTasks };
       newColumnsState[destColId] = { ...endCol, tasks: endTasks };
       
-      handleUpdateTaskStatus(removed.id, destColId, removed);
+      handleUpdateTaskStatus(removed.id, destColId);
     }
     setTaskColumns(newColumnsState);
   };
