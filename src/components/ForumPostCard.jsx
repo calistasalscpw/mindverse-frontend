@@ -18,7 +18,7 @@ const ForumPostCard = ({ post, onClick }) => {
       className="forum-post-card"
       onClick={() => onClick(post._id)}
     >
-      <Space align="start" size="large" className="post-content">
+      <div className="post-content">
         <Avatar
           src={authorImage}
           icon={<UserOutlined/>}
@@ -27,8 +27,8 @@ const ForumPostCard = ({ post, onClick }) => {
         >
           {post.initials}
         </Avatar>
-        <div style={{ flex: 1 }} className="post-details">
-          <div className="post-meta">
+        <div style={{ flex: 1, minWidth: 0 }} className="post-details">
+          <div className="post-meta" style={{ display: 'flex', justifyContent: 'space-between' }}>
             <Text className="author-name">{authorName}</Text>
             <Text className="post-date">{formatDate(post.createdAt)}</Text>
           </div>
@@ -39,7 +39,7 @@ const ForumPostCard = ({ post, onClick }) => {
             <Text className="comment-count">{post.comments || 0} comments</Text>
           </Space>
         </div>
-      </Space>
+      </div>
 
       {/* Responsive CSS */}
       <style jsx>{`
@@ -59,6 +59,8 @@ const ForumPostCard = ({ post, onClick }) => {
         }
 
         .post-content {
+          display: flex;
+          gap: 16px;
           width: 100%;
           align-items: flex-start;
         }

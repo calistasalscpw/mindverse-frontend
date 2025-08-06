@@ -1,20 +1,24 @@
 import { Layout, Menu, Input, Space, Avatar, Dropdown, Button, Drawer } from "antd";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import { MenuOutlined } from '@ant-design/icons';
 
 const { Header } = Layout;
 
 const Navbar = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('keyword') || '');
 
   const handleSearch = (value) => {
-    if (value.trim()) {
-      navigate(`/forum?keyword=${encodeURIComponent(value.trim())}`);
+    if (value) {
+      navigate(`/forum?keyword=${value}`);
+    } else {
+      navigate('/forum');
     }
   };
 
@@ -98,6 +102,7 @@ const Navbar = () => {
 
           {/* Search Bar */}
           <div style={{ flex: 1, display: "flex", justifyContent: "center" }} className="search-container">
+            {location.pathname === "/forum" && (
             <Input.Search
               placeholder="Search posts..."
               value={searchTerm}
@@ -112,6 +117,7 @@ const Navbar = () => {
                 border: "none",
               }}
             />
+            )}
           </div>
 
           {/* User Profile */}

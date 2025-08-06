@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Typography, Pagination, Layout, Space, Modal, Spin } from 'antd';
+import { Button, Input, Typography, Pagination, Layout, Space, Modal, Spin, ConfigProvider } from 'antd';
 import ForumPostCard from '../components/ForumPostCard';
 import CreatePost from './CreatePost';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import API from '../api';
 
 const { Content } = Layout;
@@ -17,41 +16,39 @@ const Forum = () => {
   const navigate = useNavigate();
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('keyword') || '');
-  const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
-  const [pageSize, setPageSize] = useState(Number(searchParams.get('pageSize')) || 5);
+  const currentPage = Number(searchParams.get('page')) || 1;
+  const pageSize = Number(searchParams.get('pageSize')) || 5;
+  const searchTerm = searchParams.get('keyword') || '';
 
-  const fetchPosts = async () => {
-    setLoading(true);
-    try{
-      const response = await API.get(`/forum?keyword=${searchTerm}&page=${currentPage}&pageSize=${pageSize}`);
-      setPosts(response.data.data);
-      setTotal(response.data.total);
-    } catch (error){
-      console.error("Failed to fetch posts:", error)
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-      fetchPosts();
-      setSearchParams({ keyword: searchTerm, page: currentPage, pageSize: pageSize });
-  }, [currentPage, searchTerm, pageSize])
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        const response = await API.get(`/forum?keyword=${searchTerm}&page=${currentPage}&pageSize=${pageSize}`);
+        setPosts(response.data.data);
+        setTotal(response.data.total);
+      } catch (error) {
+        console.error("Failed to fetch posts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleSearch = (value) => {
-    setSearchTerm(value);
-    setCurrentPage(1); 
+    fetchPosts();
+  }, [currentPage, pageSize, searchTerm]);
+
+  const handlePageChange = (page, size) => {
+    setSearchParams({ keyword: searchTerm, page, pageSize: size });
   };
 
   const handlePostCreated = () => {
     setIsModalOpen(false);
-    if (currentPage !== 1){
-      setCurrentPage(1);
+    if (currentPage !== 1) {
+      setSearchParams({ keyword: '', page: 1, pageSize });
     } else {
-      fetchPosts();
+        setSearchParams({ keyword: '', page: currentPage, pageSize });
     }
-    setSearchTerm('');
   };
 
   return (
@@ -73,30 +70,47 @@ const Forum = () => {
           </button>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '50px'}}>
-              <Spin size='large'/>
+            <div style={{ textAlign: 'center', padding: '50px' }}>
+              <Spin size='large' />
             </div>
           ) : (
-          <Space direction="vertical" style={{ width: '100%' }} className="posts-container">
-            {posts.map(post => (
-              <ForumPostCard key={post._id} post={post} onClick={(id) => navigate(`/forum/${id}`)} />
-            ))}
-          </Space>
+            <Space direction="vertical" style={{ width: '100%' }} className="posts-container">
+              {posts.map(post => (
+                <ForumPostCard key={post._id} post={post} onClick={(id) => navigate(`/forum/${id}`)} />
+              ))}
+            </Space>
           )}
 
           <div className="pagination-container">
-            <Pagination
-              current={currentPage}
-              total={total}
-              pageSize={pageSize}
-              onChange={(page, size) => {
-                setCurrentPage(page);
-                setPageSize(size);
+            <ConfigProvider
+              theme={{
+                components: {
+                  Pagination: {
+                    itemBg: 'transparent',
+                    itemActiveBg: '#360256ff',
+                    colorText: '#d1d5db',
+                    colorTextActive: '#ffffff',
+                    colorBorder: 'rgba(255, 255, 255, 0.2)',
+                    itemActiveColorDisabled: 'rgba(255, 255, 255, 0.5)',
+                    itemLinkBg: 'transparent',
+                    itemActiveBgDisabled: 'rgba(255, 255, 255, 0.2)',
+                    colorBgTextHover: '#28244a',
+                    colorPrimary: '#8b5cf6',
+                    colorPrimaryHover: '#7c3aed',
+                  },
+                },
               }}
-              showSizeChanger={false}
-              showQuickJumper={false}
-              responsive={true}
-            />
+            >
+              <Pagination
+                current={currentPage}
+                total={total}
+                pageSize={pageSize}
+                onChange={handlePageChange}
+                showSizeChanger={false}
+                showQuickJumper={false}
+                responsive={true}
+              />
+            </ConfigProvider>
           </div>
 
           <Modal
@@ -110,9 +124,9 @@ const Forum = () => {
             bodyStyle={{ background: '#1f1c3a', borderRadius: 16, padding: 0 }}
             className="create-post-modal"
           >
-            <CreatePost 
+            <CreatePost
               onSuccess={handlePostCreated}
-              onClose={() => setIsModalOpen(false)} 
+              onClose={() => setIsModalOpen(false)}
             />
           </Modal>
         </div>
@@ -310,19 +324,19 @@ const Forum = () => {
 
         /* Pagination responsive styles */
         @media (max-width: 768px) {
-          .pagination-container .ant-pagination {
+          .pagination-container :global(.ant-pagination) {
             font-size: 14px;
           }
           
-          .pagination-container .ant-pagination-item {
+          .pagination-container :global(.ant-pagination-item) {
             min-width: 28px;
             height: 28px;
             line-height: 26px;
             margin-right: 4px;
           }
           
-          .pagination-container .ant-pagination-prev,
-          .pagination-container .ant-pagination-next {
+          .pagination-container :global(.ant-pagination-prev),
+          .pagination-container :global(.ant-pagination-next) {
             min-width: 28px;
             height: 28px;
             line-height: 26px;
@@ -330,19 +344,19 @@ const Forum = () => {
         }
 
         @media (max-width: 480px) {
-          .pagination-container .ant-pagination {
+          .pagination-container :global(.ant-pagination) {
             font-size: 12px;
           }
           
-          .pagination-container .ant-pagination-item {
+          .pagination-container :global(.ant-pagination-item) {
             min-width: 24px;
             height: 24px;
             line-height: 22px;
             margin-right: 2px;
           }
           
-          .pagination-container .ant-pagination-prev,
-          .pagination-container .ant-pagination-next {
+          .pagination-container :global(.ant-pagination-prev),
+          .pagination-container :global(.ant-pagination-next) {
             min-width: 24px;
             height: 24px;
             line-height: 22px;
