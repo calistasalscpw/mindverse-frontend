@@ -1,13 +1,30 @@
-import { Form, Input, Button, Typography } from 'antd';
+import { Form, Input, Button, Typography, message, Divider } from 'antd';
+import { GoogleOutlined } from '@ant-design/icons';
+import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+
 
 const { Title, Text } = Typography;
 
 const LoginForm = () => {
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
-  const onFinish = (values) => {
-    console.log('Login form values:', values);
-    // Di sini nanti bisa tambahkan logic untuk call API login
+  const onFinish = async (values) => {
+    setLoading(true);
+
+    try {
+      await login(values)
+    } catch (error){
+      console.error('Login failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+        window.location.href = 'http://localhost:3000/auth/login/google';
   };
 
   return (
@@ -114,6 +131,11 @@ const LoginForm = () => {
           </Button>
         </Form.Item>
       </Form>
+
+      <Divider>Or</Divider>
+      <Button block icon={<GoogleOutlined />} onClick={handleGoogleLogin} size="large" style={{ borderRadius: '25px', height: '48px' }}>
+        Login with Google
+      </Button>
     </div>
   );
 };
