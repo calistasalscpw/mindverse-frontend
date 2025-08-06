@@ -38,6 +38,7 @@ const getTaskMenuItems = (task, onEdit, onDelete, onView, user) => {
 const Home = () => {
   const { Sider, Content } = Layout;
   const { Title, Text } = Typography;
+
   const [form] = Form.useForm();
   const { user, loading: authLoading } = useAuth();
 
