@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Layout, Card, Avatar, Button, Badge, Space, Typography, Dropdown, Spin, Form, message, Modal, Descriptions, Tag, Drawer } from 'antd';
-import { PlusOutlined, MoreOutlined, EditOutlined, DeleteOutlined, EyeOutlined, UserOutlined } from '@ant-design/icons';
+import { PlusOutlined, MoreOutlined, EditOutlined, DeleteOutlined, EyeOutlined, UserOutlined, CalendarOutlined } from '@ant-design/icons'; // Add CalendarOutlined
 import dayjs from 'dayjs';
 import API from '../api.js';
 
 import TaskCreate from '../components/TaskCreate';
 import TaskEdit from '../components/TaskEdit';
+import SmartMeetingScheduler from '../components/SmartMeetingScheduler'; // Add Smart Meeting component
 import { useAuth } from '../context/AuthContext';
 
 // --- Helper functions for styling and menu creation ---
@@ -20,7 +21,7 @@ const getCardColorForStatus = (status) => {
   return colors[status] || '#f3f4f6';
 };
 
-const getTaskMenuItems = (task, onEdit, onDelete, onView, user) => {
+const getTaskMenuItems = (task, onEdit, onDelete, onView, onScheduleMeeting, user) => { // Add onScheduleMeeting parameter
   const items = [
     { key: 'view', label: 'View Details', icon: <EyeOutlined />, onClick: () => onView(task) }
   ]
@@ -28,6 +29,14 @@ const getTaskMenuItems = (task, onEdit, onDelete, onView, user) => {
   if (user?.isLead || user?.isHR) {
     items.push(
       { key: 'edit', label: 'Edit Task', icon: <EditOutlined />, onClick: () => onEdit(task) },
+      { type: 'divider' },
+      // Add Smart Meeting option - only for tasks that are not Done
+      ...(task.status !== 'Done' ? [{
+        key: 'meeting', 
+        label: 'Schedule Smart Meeting', 
+        icon: <CalendarOutlined />, 
+        onClick: () => onScheduleMeeting(task)
+      }] : []),
       { type: 'divider' },
       { key: 'delete', label: 'Delete Task', icon: <DeleteOutlined />, danger: true, onClick: () => onDelete(task.id) },
     );
@@ -53,7 +62,11 @@ const Home = () => {
   const [submitting, setSubmitting] = useState(false);
   const [hoveredTask, setHoveredTask] = useState(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [teamSidebarOpen, setTeamSidebarOpen] = useState(false); // New state for team sidebar
+  const [teamSidebarOpen, setTeamSidebarOpen] = useState(false);
+
+  // Add Smart Meeting states
+  const [meetingModalVisible, setMeetingModalVisible] = useState(false);
+  const [selectedTaskForMeeting, setSelectedTaskForMeeting] = useState(null);
 
   // --- Data fetching and side effects ---
   const fetchData = async () => {
@@ -161,6 +174,17 @@ const Home = () => {
   const handleOpenViewModal = (task) => { setViewingTask(task); setModalContent('view'); setIsModalVisible(true); };
   const handleCancel = () => { setIsModalVisible(false); setEditingTask(null); setViewingTask(null); };
 
+  // Add Smart Meeting handlers
+  const handleScheduleMeeting = (task) => {
+    setSelectedTaskForMeeting(task);
+    setMeetingModalVisible(true);
+  };
+
+  const handleCloseMeetingModal = () => {
+    setMeetingModalVisible(false);
+    setSelectedTaskForMeeting(null);
+  };
+
   const handleSubmit = async (values) => { 
     setSubmitting(true);
     const payload = { ...values, dueDate: values.dueDate ? values.dueDate.toISOString() : null };
@@ -175,7 +199,7 @@ const Home = () => {
       setIsModalVisible(false);
       fetchData();
     } catch (error) {
-      message.error(error.response?.data?.message || 'An error occured!');
+      message.error(error.response?.data?.message || 'An error occurred!');
       message.error(error.message)
     } finally {
       setSubmitting(false);
@@ -378,7 +402,7 @@ const Home = () => {
                                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <Text strong style={{ color: '#000', fontSize: '13px', flex: 1, marginRight: '8px', lineHeight: '1.3' }}>{task.title}</Text>
                                         <Dropdown
-                                          menu={{ items: getTaskMenuItems(task, handleOpenEditModal, showDeleteConfirm, handleOpenViewModal, user) }}
+                                          menu={{ items: getTaskMenuItems(task, handleOpenEditModal, showDeleteConfirm, handleOpenViewModal, handleScheduleMeeting, user) }} // Add handleScheduleMeeting parameter
                                           trigger={['click']}
                                           placement="bottomRight"
                                         >
@@ -456,6 +480,14 @@ const Home = () => {
           </div>
         </div>
       )}
+
+      {/* Smart Meeting Modal */}
+      <SmartMeetingScheduler
+        visible={meetingModalVisible}
+        onClose={handleCloseMeetingModal}
+        task={selectedTaskForMeeting}
+        user={user}
+      />
 
       {/* CSS */}
       <style jsx>{`
