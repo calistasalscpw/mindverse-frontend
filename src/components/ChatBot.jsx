@@ -49,7 +49,8 @@ const ChatBot = () => {
     setInput('');
     setTyping(true);
 
-    fetch("http://localhost:3000/chatbot/chat", {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    fetch(`${apiUrl}/chatbot/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
