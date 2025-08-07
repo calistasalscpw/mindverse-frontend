@@ -31,15 +31,15 @@ const SmartMeetingScheduler = ({
         taskId: task.id
       });
       
-      console.log('API Response:', response.data); // Debug log
+      console.log('API Response:', response.data);
       
       if (response.data.success && response.data.analysis) {
         const analysisData = response.data.analysis;
-        console.log('Analysis Data:', analysisData); // Debug log
+        console.log('Analysis Data:', analysisData);
         
         setAnalysis(analysisData);
         
-        // Pre-fill form with REAL AI suggestions
+        // Pre-fill form with AI suggestions
         const formattedAgenda = Array.isArray(analysisData.agenda) 
           ? '• ' + analysisData.agenda.join('\n• ')
           : analysisData.agenda || '';
@@ -55,53 +55,13 @@ const SmartMeetingScheduler = ({
         });
         
         setCurrentStep(1);
-        message.success('🤖 AI Analysis completed! Real recommendations generated from OpenAI.');
+        message.success('🤖 AI Analysis completed! Recommendations generated from OpenAI.');
       } else {
         throw new Error('Invalid API response structure');
       }
     } catch (error) {
       console.error('API Error:', error);
-      
-      // Enhanced fallback with more intelligent suggestions
-      const mockAnalysis = {
-        suggested_title: `${task.status} Review - ${task.title}`,
-        suggested_duration: task.status === 'To Do' ? 45 : task.status === 'Review' ? 60 : 30,
-        urgency: task.dueDate !== 'No date' ? 'High' : 'Medium',
-        best_time_of_day: '10:00 AM - 11:00 AM',
-        best_day_suggestion: 'Tuesday or Wednesday',
-        agenda: task.status === 'To Do' ? 
-          ['Project kickoff and overview', 'Role assignments and responsibilities', 'Timeline and milestone planning', 'Resource allocation discussion'] :
-          task.status === 'Review' ? 
-          ['Deliverables presentation', 'Quality assessment and testing', 'Feedback discussion and revisions', 'Approval process and next steps'] :
-          ['Progress status update', 'Challenge identification and solutions', 'Resource needs assessment', 'Next sprint planning'],
-        meeting_purpose: `Coordinate team efforts and ensure successful completion of ${task.title}`,
-        preparation_notes: `Review ${task.title} requirements, current progress, and prepare status updates`,
-        success_metrics: 'Clear action items assigned with timeline and responsibilities defined',
-        recommended_discussion_points: [
-          `Technical progress on ${task.title}`,
-          'Resource allocation and team coordination',
-          'Quality standards and testing approach',
-          'Timeline optimization and risk mitigation'
-        ],
-        suggested_date: dayjs().add(1, 'day').format('YYYY-MM-DD'),
-        source: 'fallback' // Add source indicator
-      };
-      
-      setAnalysis(mockAnalysis);
-      
-      const formattedAgenda = '• ' + mockAnalysis.agenda.join('\n• ');
-      form.setFieldsValue({
-        meetingTitle: mockAnalysis.suggested_title,
-        duration: mockAnalysis.suggested_duration,
-        meetingDate: dayjs(mockAnalysis.suggested_date),
-        meetingTime: dayjs('10:00', 'HH:mm'),
-        meetingType: 'google-meet',
-        agenda: formattedAgenda
-      });
-      
-      setCurrentStep(1);
-      message.warning('⚠️ Using fallback analysis. Please check API connection.');
-      console.error('Analysis error, using intelligent fallback:', error);
+      message.error('Failed to analyze task. Please check your API connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -218,33 +178,26 @@ const SmartMeetingScheduler = ({
         </div>
       )}
 
-      {/* Step 1: Enhanced AI Analysis Results & Meeting Details Form */}
+      {/* Step 1: AI Analysis Results & Meeting Details Form */}
       {currentStep === 1 && analysis && (
         <div>
-          {/* Enhanced AI Analysis Results Card */}
+          {/* AI Analysis Results Card */}
           <Card 
             style={{ 
               marginBottom: 24, 
-              background: analysis.source === 'fallback' 
-                ? 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)' 
-                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               color: 'white',
               border: 'none'
             }}
           >
             <Title level={4} style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: 8 }}>
               <BulbOutlined /> 
-              {analysis.source === 'fallback' 
-                ? '🤖 Smart Fallback Recommendations' 
-                : '🤖 AI Smart Recommendations'}
+              🤖 AI Smart Recommendations
             </Title>
             
-            {/* Show source indicator */}
-            {analysis.source !== 'fallback' && (
-              <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, display: 'block', marginTop: 4 }}>
-                • {analysis.tokens_used || 0} tokens used
-              </Text>
-            )}
+            <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, display: 'block', marginTop: 4 }}>
+              Powered by OpenAI • {analysis.tokens_used || 0} tokens used
+            </Text>
             
             {/* Key Metrics Grid */}
             <div style={{ 
@@ -461,7 +414,7 @@ const SmartMeetingScheduler = ({
         </div>
       )}
 
-      {/* Step 2: Enhanced Success Confirmation with Meeting Link */}
+      {/* Step 2: Success Confirmation with Meeting Link */}
       {currentStep === 2 && meetingResponse && (
         <div style={{ textAlign: 'center', padding: '40px 20px' }}>
           <div style={{ fontSize: 64, color: '#52c41a', marginBottom: 20 }}>
@@ -474,7 +427,7 @@ const SmartMeetingScheduler = ({
             Your AI-optimized meeting has been created and invitations sent
           </Text>
 
-          {/* Meeting Link Card - For Organizer */}
+          {/* Meeting Link Card */}
           <Card 
             style={{ 
               marginBottom: 24, 
