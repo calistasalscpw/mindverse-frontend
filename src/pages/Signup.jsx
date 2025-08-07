@@ -46,13 +46,14 @@ const Signup = () => {
     );
 
     const onFinish = async (values) => {
-        const formData = new FormData();
+        // const formData = new FormData();
         const userData = {
             username: values.username,
             email: values.email,
-            password: values.password
+            password: values.password,
+            profileImageUrl: imageUrl 
         };
-        if (file) formData.append("profileImageUrl", file);
+        // if (file) formData.append("profileImageUrl", file);
 
         try {
             await API.post('/auth/signup', userData);
