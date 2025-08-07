@@ -23,7 +23,8 @@ const LoginForm = () => {
   };
 
   const handleGoogleLogin = () => {
-        window.location.href = 'http://localhost:3000/auth/login/google';
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        window.location.href = `${apiUrl}/auth/login/google`;
   };
 
   return (
