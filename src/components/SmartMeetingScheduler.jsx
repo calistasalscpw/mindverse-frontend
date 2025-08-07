@@ -31,11 +31,11 @@ const SmartMeetingScheduler = ({
         taskId: task.id
       });
       
-      console.log('API Response:', response.data); // Debug log
+      console.log('API Response:', response.data); 
       
       if (response.data.success && response.data.analysis) {
         const analysisData = response.data.analysis;
-        console.log('Analysis Data:', analysisData); // Debug log
+        console.log('Analysis Data:', analysisData); 
         
         setAnalysis(analysisData);
         
@@ -62,7 +62,6 @@ const SmartMeetingScheduler = ({
     } catch (error) {
       console.error('API Error:', error);
       
-      // Enhanced fallback with more intelligent suggestions
       const mockAnalysis = {
         suggested_title: `${task.status} Review - ${task.title}`,
         suggested_duration: task.status === 'To Do' ? 45 : task.status === 'Review' ? 60 : 30,
