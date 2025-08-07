@@ -13,3 +13,16 @@ body {
 *, *::before, *::after {
   box-sizing: border-box;
 }
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+}

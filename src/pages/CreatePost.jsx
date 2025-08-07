@@ -5,7 +5,7 @@ import API from '../api';
 
 const { Title } = Typography;
 
-const CreatePost = ({ onSuccess, onClose }) => {
+const CreatePost = ({ onSuccess, onClose, isMobile = false }) => {
   const [loading, setLoading] = useState(false);
   const [hover, setHover] = useState(false);
   const [form] = Form.useForm();
@@ -45,15 +45,18 @@ const CreatePost = ({ onSuccess, onClose }) => {
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
+        padding: isMobile ? '1rem' : 0
       }}
     >
       <div
         style={{
           background: hover ? '#28244a' : '#1f1c3a',
           borderRadius: 16,
-          padding: 40,
+          padding: isMobile ? 24 : 40,
           width: '100%',
-          maxWidth: 700,
+          maxWidth: isMobile ? '95%' : 700,
+          maxHeight: isMobile ? '90vh' : 'auto',
+          overflow: isMobile ? 'auto' : 'visible',
           position: 'relative',
           border: '1px solid rgba(255,255,255,0.08)',
           color: 'white',
@@ -63,7 +66,7 @@ const CreatePost = ({ onSuccess, onClose }) => {
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
       >
-      <Button 
+        <Button 
           type="text" 
           icon={<CloseOutlined />} 
           onClick={onClose}
@@ -72,22 +75,40 @@ const CreatePost = ({ onSuccess, onClose }) => {
             top: 16,
             right: 16,
             color: 'white',
-            fontSize: '18px',
+            fontSize: isMobile ? '16px' : '18px',
             padding: 8,
             background: 'rgba(255,255,255,0.1)',
             borderRadius: '50%',
-            width: 32,
-            height: 32,
+            width: isMobile ? 28 : 32,
+            height: isMobile ? 28 : 32,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         />
         
-        <Title level={3} style={{ color: 'white', marginBottom: 24 }}>Create New Post</Title>
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Title 
+          level={3} 
+          style={{ 
+            color: 'white', 
+            marginBottom: isMobile ? 16 : 24,
+            fontSize: isMobile ? '18px' : '24px'
+          }}
+        >
+          Create New Post
+        </Title>
+        
+        <Form 
+          form={form} 
+          layout="vertical" 
+          onFinish={handleSubmit}
+          size={isMobile ? 'small' : 'middle'}
+        >
           <Form.Item 
-            label={<span style={{ color: 'white' }}>Title</span>} 
+            label={<span style={{ 
+              color: 'white',
+              fontSize: isMobile ? '12px' : '14px'
+            }}>Title</span>} 
             name="title" 
             rules={[{ required: true, message: 'Please enter a title' }]}
           >
@@ -98,28 +119,39 @@ const CreatePost = ({ onSuccess, onClose }) => {
                 background: '#13111f',
                 border: 'none',
                 color: 'white',
-                padding: '12px 16px',
+                padding: isMobile ? '8px 12px' : '12px 16px',
+                fontSize: isMobile ? '12px' : '14px'
               }}
             />
           </Form.Item>
+          
           <Form.Item 
-            label={<span style={{ color: 'white' }}>Content</span>} 
+            label={<span style={{ 
+              color: 'white',
+              fontSize: isMobile ? '12px' : '14px'
+            }}>Content</span>} 
             name="body" 
             rules={[{ required: true, message: 'Please enter content' }]}
           >
             <Input.TextArea 
-              rows={6} 
+              rows={isMobile ? 4 : 6} 
               placeholder="Write your post here..."
               allowClear={false}
               style={{
                 background: '#13111f',
                 border: 'none',
                 color: 'white',
-                padding: '12px 16px',
+                padding: isMobile ? '8px 12px' : '12px 16px',
+                fontSize: isMobile ? '12px' : '14px'
               }}
             />
           </Form.Item>
-          <Form.Item style={{ marginBottom: 0, display: 'flex', justifyContent: 'center' }}>
+          
+          <Form.Item style={{ 
+            marginBottom: 0, 
+            display: 'flex', 
+            justifyContent: 'center' 
+          }}>
             <Button
               type="primary"
               htmlType="submit"
@@ -127,9 +159,9 @@ const CreatePost = ({ onSuccess, onClose }) => {
               style={{
                 backgroundColor: '#8b5cf6',
                 borderRadius: 8,
-                minWidth: 550,
-                height: 44,
-                fontSize: 16,
+                minWidth: isMobile ? '100%' : 550,
+                height: isMobile ? 36 : 44,
+                fontSize: isMobile ? 14 : 16,
                 fontWeight: 500,
               }}
             >

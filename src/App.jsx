@@ -11,7 +11,7 @@ import Forum from './pages/Forum';
 import ForumPostDetail from './pages/ForumPostDetail';
 
 import { AuthProvider } from './context/AuthContext';
-import ChatBot from './components/chatBot';
+import ChatBot from './components/ChatBot';
 import { Layout } from 'antd';
 const { Content } = Layout;
 
