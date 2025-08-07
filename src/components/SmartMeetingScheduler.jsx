@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Modal, Button, Form, Input, DatePicker, TimePicker, Select, Card, Tag, Steps, message, Space, Typography, List } from 'antd';
-import { CalendarOutlined, ClockCircleOutlined, TeamOutlined, BulbOutlined, GoogleOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import { Modal, Button, Form, Input, DatePicker, TimePicker, Select, Card, Tag, Steps, message, Space, Typography, List, Divider, Alert } from 'antd';
+import { CalendarOutlined, ClockCircleOutlined, TeamOutlined, BulbOutlined, GoogleOutlined, VideoCameraOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import API from '../api';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 const { Step } = Steps;
@@ -21,7 +21,7 @@ const SmartMeetingScheduler = ({
   const [analysis, setAnalysis] = useState(null);
   const [schedulingMeeting, setSchedulingMeeting] = useState(false);
 
-  // Step 1: AI Analysis
+  // AI Analysis
   const analyzeTask = async () => {
     if (!task) return;
     
@@ -31,25 +31,38 @@ const SmartMeetingScheduler = ({
         taskId: task.id
       });
       
-      if (response.data.success) {
-        setAnalysis(response.data.analysis);
+      console.log('API Response:', response.data); // Debug log
+      
+      if (response.data.success && response.data.analysis) {
+        const analysisData = response.data.analysis;
+        console.log('Analysis Data:', analysisData); // Debug log
         
-        // Pre-fill form with AI suggestions
+        setAnalysis(analysisData);
+        
+        // Pre-fill form with REAL AI suggestions
+        const formattedAgenda = Array.isArray(analysisData.agenda) 
+          ? '• ' + analysisData.agenda.join('\n• ')
+          : analysisData.agenda || '';
+
         form.setFieldsValue({
-          meetingTitle: response.data.analysis.suggested_title,
-          duration: response.data.analysis.suggested_duration,
-          meetingDate: response.data.analysis.suggested_date ? 
-            dayjs(response.data.analysis.suggested_date) : dayjs().add(1, 'day'),
+          meetingTitle: analysisData.suggested_title || `Meeting for ${task.title}`,
+          duration: analysisData.suggested_duration || 30,
+          meetingDate: analysisData.suggested_date ? 
+            dayjs(analysisData.suggested_date) : dayjs().add(1, 'day'),
           meetingTime: dayjs('10:00', 'HH:mm'),
           meetingType: 'google-meet',
-          agenda: response.data.analysis.agenda?.join('\n• ') || ''
+          agenda: formattedAgenda
         });
         
         setCurrentStep(1);
-        message.success('Task analysis completed! Review the suggestions below.');
+        message.success('🤖 AI Analysis completed! Real recommendations generated from OpenAI.');
+      } else {
+        throw new Error('Invalid API response structure');
       }
     } catch (error) {
-      // Fallback to mock analysis if API fails
+      console.error('API Error:', error);
+      
+      // Enhanced fallback with more intelligent suggestions
       const mockAnalysis = {
         suggested_title: `${task.status} Review - ${task.title}`,
         suggested_duration: task.status === 'To Do' ? 45 : task.status === 'Review' ? 60 : 30,
@@ -57,36 +70,46 @@ const SmartMeetingScheduler = ({
         best_time_of_day: '10:00 AM - 11:00 AM',
         best_day_suggestion: 'Tuesday or Wednesday',
         agenda: task.status === 'To Do' ? 
-          ['Project kickoff and overview', 'Role assignments', 'Timeline planning', 'Resource discussion'] :
+          ['Project kickoff and overview', 'Role assignments and responsibilities', 'Timeline and milestone planning', 'Resource allocation discussion'] :
           task.status === 'Review' ? 
-          ['Deliverables presentation', 'Quality assessment', 'Feedback discussion', 'Approval process'] :
-          ['Progress status update', 'Challenge discussion', 'Resource needs', 'Next steps'],
-        meeting_purpose: `Coordinate team efforts for ${task.title}`,
-        preparation_notes: 'Review task requirements and current progress',
-        suggested_date: dayjs().add(1, 'day').format('YYYY-MM-DD')
+          ['Deliverables presentation', 'Quality assessment and testing', 'Feedback discussion and revisions', 'Approval process and next steps'] :
+          ['Progress status update', 'Challenge identification and solutions', 'Resource needs assessment', 'Next sprint planning'],
+        meeting_purpose: `Coordinate team efforts and ensure successful completion of ${task.title}`,
+        preparation_notes: `Review ${task.title} requirements, current progress, and prepare status updates`,
+        success_metrics: 'Clear action items assigned with timeline and responsibilities defined',
+        recommended_discussion_points: [
+          `Technical progress on ${task.title}`,
+          'Resource allocation and team coordination',
+          'Quality standards and testing approach',
+          'Timeline optimization and risk mitigation'
+        ],
+        suggested_date: dayjs().add(1, 'day').format('YYYY-MM-DD'),
+        source: 'fallback' // Add source indicator
       };
       
       setAnalysis(mockAnalysis);
       
-      // Pre-fill form with mock suggestions
+      const formattedAgenda = '• ' + mockAnalysis.agenda.join('\n• ');
       form.setFieldsValue({
         meetingTitle: mockAnalysis.suggested_title,
         duration: mockAnalysis.suggested_duration,
         meetingDate: dayjs(mockAnalysis.suggested_date),
         meetingTime: dayjs('10:00', 'HH:mm'),
-        meetingType: 'internal',
-        agenda: '• ' + mockAnalysis.agenda.join('\n• ')
+        meetingType: 'google-meet',
+        agenda: formattedAgenda
       });
       
       setCurrentStep(1);
-      message.success('Task analysis completed! Review the suggestions below.');
-      console.error('Analysis error, using fallback:', error);
+      message.warning('⚠️ Using fallback analysis. Please check API connection.');
+      console.error('Analysis error, using intelligent fallback:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Step 2: Schedule Meeting
+  const [meetingResponse, setMeetingResponse] = useState(null);
+
+  // Schedule Meeting
   const scheduleMeeting = async (values) => {
     setSchedulingMeeting(true);
     try {
@@ -103,6 +126,7 @@ const SmartMeetingScheduler = ({
       const response = await API.post('/meetings/schedule', meetingData);
       
       if (response.data.success) {
+        setMeetingResponse(response.data);
         setCurrentStep(2);
         message.success('Meeting scheduled successfully! Invitations have been sent.');
       }
@@ -117,6 +141,7 @@ const SmartMeetingScheduler = ({
   const resetAndClose = () => {
     setCurrentStep(0);
     setAnalysis(null);
+    setMeetingResponse(null);
     form.resetFields();
     onClose();
   };
@@ -124,6 +149,10 @@ const SmartMeetingScheduler = ({
   const getUrgencyColor = (urgency) => {
     const colors = { High: 'red', Medium: 'orange', Low: 'green' };
     return colors[urgency] || 'blue';
+  };
+
+  const getUrgencyIcon = (urgency) => {
+    return urgency === 'High' ? <ExclamationCircleOutlined /> : <CheckCircleOutlined />;
   };
 
   return (
@@ -137,11 +166,11 @@ const SmartMeetingScheduler = ({
       open={visible}
       onCancel={resetAndClose}
       footer={null}
-      width={800}
+      width={850}
       destroyOnClose
     >
       <Steps current={currentStep} style={{ marginBottom: 24 }}>
-        <Step title="Analyze Task" icon={<BulbOutlined />} />
+        <Step title="AI Analysis" icon={<BulbOutlined />} />
         <Step title="Schedule Meeting" icon={<CalendarOutlined />} />
         <Step title="Confirmation" icon={<TeamOutlined />} />
       </Steps>
@@ -149,13 +178,15 @@ const SmartMeetingScheduler = ({
       {/* Step 0: Task Analysis */}
       {currentStep === 0 && (
         <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <Title level={4}>Analyze Task for Smart Meeting</Title>
+          <Title level={4}>Analyze Task with AI</Title>
           
           {task && (
             <Card style={{ marginBottom: 20, textAlign: 'left' }}>
-              <Title level={5}>{task.title}</Title>
-              <Text type="secondary">{task.description || 'No description provided'}</Text>
-              <div style={{ marginTop: 12 }}>
+              <Title level={5} style={{ marginBottom: 12 }}>{task.title}</Title>
+              <Paragraph type="secondary" style={{ marginBottom: 12 }}>
+                {task.description || 'No description provided'}
+              </Paragraph>
+              <Space wrap>
                 <Tag color={getUrgencyColor(task.status)}>{task.status}</Tag>
                 <Tag icon={<TeamOutlined />}>
                   {task.members?.length || 0} assignees
@@ -165,7 +196,7 @@ const SmartMeetingScheduler = ({
                     Due: {task.dueDate}
                   </Tag>
                 )}
-              </div>
+              </Space>
             </Card>
           )}
           
@@ -178,200 +209,411 @@ const SmartMeetingScheduler = ({
             style={{ 
               background: 'linear-gradient(90deg, #8F1383 0%, #432E54 100%)',
               border: 'none',
-              height: 48
+              height: 48,
+              minWidth: 200
             }}
           >
-            {loading ? 'Analyzing Task...' : 'Analyze with AI'}
+            {loading ? 'Analyzing with AI...' : 'Generate Smart Recommendations'}
           </Button>
         </div>
       )}
 
-      {/* Step 1: Meeting Details Form */}
+      {/* Step 1: Enhanced AI Analysis Results & Meeting Details Form */}
       {currentStep === 1 && analysis && (
         <div>
-          {console.log('Rendering analysis card with data:', analysis)}
-          <Card style={{ marginBottom: 20, background: '#f8f9fa' }}>
-            <Title level={5} style={{ margin: 0, color: '#8F1383' }}>
-              <BulbOutlined /> AI Analysis Results
+          {/* Enhanced AI Analysis Results Card */}
+          <Card 
+            style={{ 
+              marginBottom: 24, 
+              background: analysis.source === 'fallback' 
+                ? 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)' 
+                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              border: 'none'
+            }}
+          >
+            <Title level={4} style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <BulbOutlined /> 
+              {analysis.source === 'fallback' 
+                ? '🤖 Smart Fallback Recommendations' 
+                : '🤖 AI Smart Recommendations'}
             </Title>
-            <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div>
-                <Text strong>Urgency:</Text> <Tag color={getUrgencyColor(analysis.urgency || 'Medium')}>{analysis.urgency || 'Medium'}</Tag>
+            
+            {/* Show source indicator */}
+            {analysis.source !== 'fallback' && (
+              <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, display: 'block', marginTop: 4 }}>
+                • {analysis.tokens_used || 0} tokens used
+              </Text>
+            )}
+            
+            {/* Key Metrics Grid */}
+            <div style={{ 
+              marginTop: 16, 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+              gap: 16 
+            }}>
+              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 12, borderRadius: 8 }}>
+                <Text strong style={{ color: 'white', display: 'block' }}>Urgency Level</Text>
+                <Tag 
+                  color={getUrgencyColor(analysis.urgency || 'Medium')} 
+                  icon={getUrgencyIcon(analysis.urgency)}
+                  style={{ marginTop: 4 }}
+                >
+                  {analysis.urgency || 'Medium'}
+                </Tag>
               </div>
-              <div>
-                <Text strong>Suggested Duration:</Text> {analysis.suggested_duration || 30} minutes
+              
+              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 12, borderRadius: 8 }}>
+                <Text strong style={{ color: 'white', display: 'block' }}>Duration</Text>
+                <Text style={{ color: 'white', fontSize: 16, fontWeight: 500 }}>
+                  {analysis.suggested_duration || 30} minutes
+                </Text>
               </div>
-              <div>
-                <Text strong>Best Time:</Text> {analysis.best_time_of_day || '10:00 AM - 11:00 AM'}
+              
+              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 12, borderRadius: 8 }}>
+                <Text strong style={{ color: 'white', display: 'block' }}>Best Time</Text>
+                <Text style={{ color: 'white', fontSize: 14 }}>
+                  {analysis.best_time_of_day || '10:00 AM - 11:00 AM'}
+                </Text>
               </div>
-              <div>
-                <Text strong>Best Day:</Text> {analysis.best_day_suggestion || 'Tuesday or Wednesday'}
+              
+              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 12, borderRadius: 8 }}>
+                <Text strong style={{ color: 'white', display: 'block' }}>Best Day</Text>
+                <Text style={{ color: 'white', fontSize: 14 }}>
+                  {analysis.best_day_suggestion || 'Tuesday or Wednesday'}
+                </Text>
               </div>
             </div>
             
+            {/* Meeting Purpose */}
             {analysis.meeting_purpose && (
-              <div style={{ marginTop: 12 }}>
-                <Text strong>Purpose:</Text> <Text>{analysis.meeting_purpose}</Text>
-              </div>
-            )}
-            
-            {analysis.recommended_discussion_points && (
-              <div style={{ marginTop: 16, padding: 12, background: '#e6f7ff', borderRadius: 6, border: '1px solid #91d5ff' }}>
-                <Text strong style={{ color: '#1890ff' }}>🎯 AI Recommended Discussion Points:</Text>
-                <div style={{ marginTop: 8 }}>
-                  {Array.isArray(analysis.recommended_discussion_points) ? 
-                    analysis.recommended_discussion_points.map((point, index) => (
-                      <div key={index} style={{ marginBottom: 4, color: '#0050b3' }}>
-                        • {point}
-                      </div>
-                    )) :
-                    <Text style={{ color: '#0050b3' }}>{analysis.recommended_discussion_points}</Text>
-                  }
-                </div>
-              </div>
-            )}
-            
-            {analysis.success_metrics && (
-              <div style={{ marginTop: 12, fontSize: '13px', color: '#666' }}>
-                <Text strong>Success Metrics:</Text> {analysis.success_metrics}
+              <div style={{ marginTop: 16, padding: 12, background: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
+                <Text strong style={{ color: 'white', display: 'block', marginBottom: 8 }}>
+                  🎯 Meeting Purpose
+                </Text>
+                <Text style={{ color: 'white', lineHeight: 1.5 }}>{analysis.meeting_purpose}</Text>
               </div>
             )}
           </Card>
 
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={scheduleMeeting}
-          >
-            <Form.Item
-              name="meetingTitle"
-              label="Meeting Title"
-              rules={[{ required: true, message: 'Please enter meeting title' }]}
+          {/* AI Agenda & Discussion Points */}
+          {(analysis.agenda || analysis.recommended_discussion_points) && (
+            <Card style={{ marginBottom: 20 }}>
+              <Title level={5} style={{ color: '#8F1383', marginBottom: 16 }}>
+                📋 AI Generated Agenda & Discussion Points
+              </Title>
+              
+              {analysis.agenda && (
+                <div style={{ marginBottom: 16 }}>
+                  <Text strong style={{ display: 'block', marginBottom: 8 }}>Suggested Agenda:</Text>
+                  <div style={{ background: '#f8f9fa', padding: 12, borderRadius: 6, borderLeft: '4px solid #8F1383' }}>
+                    {Array.isArray(analysis.agenda) ? (
+                      <ul style={{ margin: 0, paddingLeft: 16 }}>
+                        {analysis.agenda.map((item, index) => (
+                          <li key={index} style={{ marginBottom: 4, color: '#2c3e50' }}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <Text style={{ color: '#2c3e50' }}>{analysis.agenda}</Text>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {analysis.recommended_discussion_points && (
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: 8 }}>Key Discussion Points:</Text>
+                  <div style={{ background: '#e6f7ff', padding: 12, borderRadius: 6, border: '1px solid #91d5ff' }}>
+                    {Array.isArray(analysis.recommended_discussion_points) ? (
+                      <ul style={{ margin: 0, paddingLeft: 16 }}>
+                        {analysis.recommended_discussion_points.map((point, index) => (
+                          <li key={index} style={{ marginBottom: 4, color: '#0050b3' }}>{point}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <Text style={{ color: '#0050b3' }}>{analysis.recommended_discussion_points}</Text>
+                    )}
+                  </div>
+                </div>
+              )}
+            </Card>
+          )}
+
+          {/* Meeting Details Form */}
+          <Card title="Meeting Details" style={{ marginBottom: 20 }}>
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={scheduleMeeting}
             >
-              <Input placeholder="Enter meeting title" />
-            </Form.Item>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
               <Form.Item
-                name="meetingDate"
-                label="Date"
-                rules={[{ required: true, message: 'Please select date' }]}
+                name="meetingTitle"
+                label="Meeting Title"
+                rules={[{ required: true, message: 'Please enter meeting title' }]}
               >
-                <DatePicker style={{ width: '100%' }} />
+                <Input placeholder="Enter meeting title" size="large" />
               </Form.Item>
 
-              <Form.Item
-                name="meetingTime"
-                label="Time"
-                rules={[{ required: true, message: 'Please select time' }]}
-              >
-                <TimePicker format="HH:mm" style={{ width: '100%' }} />
-              </Form.Item>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                <Form.Item
+                  name="meetingDate"
+                  label="Date"
+                  rules={[{ required: true, message: 'Please select date' }]}
+                >
+                  <DatePicker style={{ width: '100%' }} size="large" />
+                </Form.Item>
+
+                <Form.Item
+                  name="meetingTime"
+                  label="Time"
+                  rules={[{ required: true, message: 'Please select time' }]}
+                >
+                  <TimePicker format="HH:mm" style={{ width: '100%' }} size="large" />
+                </Form.Item>
+
+                <Form.Item
+                  name="duration"
+                  label="Duration (minutes)"
+                  rules={[{ required: true, message: 'Please select duration' }]}
+                >
+                  <Select size="large">
+                    <Option value={15}>15 minutes</Option>
+                    <Option value={30}>30 minutes</Option>
+                    <Option value={45}>45 minutes</Option>
+                    <Option value={60}>1 hour</Option>
+                    <Option value={90}>1.5 hours</Option>
+                    <Option value={120}>2 hours</Option>
+                  </Select>
+                </Form.Item>
+              </div>
 
               <Form.Item
-                name="duration"
-                label="Duration (minutes)"
-                rules={[{ required: true, message: 'Please select duration' }]}
+                name="meetingType"
+                label="Meeting Type"
+                rules={[{ required: true }]}
               >
-                <Select>
-                  <Option value={15}>15 minutes</Option>
-                  <Option value={30}>30 minutes</Option>
-                  <Option value={45}>45 minutes</Option>
-                  <Option value={60}>1 hour</Option>
-                  <Option value={90}>1.5 hours</Option>
-                  <Option value={120}>2 hours</Option>
+                <Select size="large">
+                  <Option value="google-meet">
+                    <Space><GoogleOutlined style={{ color: '#4285f4' }} />Google Meet (Recommended)</Space>
+                  </Option>
+                  <Option value="internal">
+                    <Space><VideoCameraOutlined />Internal Meeting (MindVerse)</Space>
+                  </Option>
                 </Select>
               </Form.Item>
-            </div>
 
-            <Form.Item
-              name="meetingType"
-              label="Meeting Type"
-              rules={[{ required: true }]}
-            >
-              <Select>
-                <Option value="google-meet">
-                  <Space><GoogleOutlined />Google Meet (Recommended)</Space>
-                </Option>
-                <Option value="internal">
-                  <Space><VideoCameraOutlined />Internal Meeting (MindVerse)</Space>
-                </Option>
-              </Select>
-            </Form.Item>
+              <Form.Item
+                name="agenda"
+                label="Meeting Agenda"
+                extra="You can edit the AI-generated agenda above"
+              >
+                <TextArea 
+                  rows={8}
+                  placeholder="Meeting agenda (AI suggestion loaded)"
+                />
+              </Form.Item>
 
-            <Form.Item
-              name="agenda"
-              label="Meeting Agenda"
-            >
-              <TextArea 
-                rows={6}
-                placeholder="Meeting agenda (AI suggestion loaded)"
-              />
-            </Form.Item>
+              {/* Preparation Notes */}
+              {analysis.preparation_notes && (
+                <Alert
+                  message="Preparation Notes"
+                  description={analysis.preparation_notes}
+                  type="info"
+                  showIcon
+                  style={{ marginBottom: 16 }}
+                />
+              )}
 
-            {analysis.preparation_notes && (
-              <Card size="small" style={{ marginBottom: 16, background: '#fff7e6' }}>
-                <Text strong>Preparation Notes:</Text>
-                <br />
-                <Text>{analysis.preparation_notes}</Text>
-              </Card>
-            )}
+              {/* Success Metrics */}
+              {analysis.success_metrics && (
+                <Alert
+                  message="Success Metrics"
+                  description={analysis.success_metrics}
+                  type="success"
+                  showIcon
+                  style={{ marginBottom: 20 }}
+                />
+              )}
 
-            <div style={{ textAlign: 'right', marginTop: 20 }}>
-              <Space>
-                <Button onClick={() => setCurrentStep(0)}>
-                  Back to Analysis
-                </Button>
-                <Button 
-                  type="primary" 
-                  htmlType="submit"
-                  loading={schedulingMeeting}
-                  style={{ background: '#8F1383', borderColor: '#8F1383' }}
-                >
-                  Schedule Meeting & Send Invites
-                </Button>
-              </Space>
-            </div>
-          </Form>
+              <div style={{ textAlign: 'right', marginTop: 20 }}>
+                <Space>
+                  <Button onClick={() => setCurrentStep(0)} size="large">
+                    Back to Analysis
+                  </Button>
+                  <Button 
+                    type="primary" 
+                    htmlType="submit"
+                    loading={schedulingMeeting}
+                    size="large"
+                    style={{ 
+                      background: 'linear-gradient(90deg, #8F1383 0%, #432E54 100%)',
+                      border: 'none',
+                      minWidth: 180
+                    }}
+                  >
+                    {schedulingMeeting ? 'Scheduling...' : 'Schedule Meeting & Send Invites'}
+                  </Button>
+                </Space>
+              </div>
+            </Form>
+          </Card>
         </div>
       )}
 
-      {/* Step 2: Success Confirmation */}
-      {currentStep === 2 && (
+      {/* Step 2: Enhanced Success Confirmation with Meeting Link */}
+      {currentStep === 2 && meetingResponse && (
         <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-          <div style={{ fontSize: 48, color: '#52c41a', marginBottom: 16 }}>
+          <div style={{ fontSize: 64, color: '#52c41a', marginBottom: 20 }}>
             ✅
           </div>
-          <Title level={3} style={{ color: '#52c41a' }}>
+          <Title level={2} style={{ color: '#52c41a', marginBottom: 8 }}>
             Meeting Scheduled Successfully!
           </Title>
+          <Text type="secondary" style={{ fontSize: 16, marginBottom: 24, display: 'block' }}>
+            Your AI-optimized meeting has been created and invitations sent
+          </Text>
+
+          {/* Meeting Link Card - For Organizer */}
+          <Card 
+            style={{ 
+              marginBottom: 24, 
+              textAlign: 'left',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              border: 'none'
+            }}
+          >
+            <Title level={4} style={{ color: 'white', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              🔗 Your Meeting Link
+            </Title>
+            
+            <div style={{ 
+              background: 'rgba(255,255,255,0.15)', 
+              padding: 16, 
+              borderRadius: 8,
+              marginBottom: 16
+            }}>
+              <div style={{ marginBottom: 12 }}>
+                <Text strong style={{ color: 'white', display: 'block', marginBottom: 8 }}>
+                  Meeting: {meetingResponse.meeting?.title}
+                </Text>
+                <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 14 }}>
+                  📅 {new Date(meetingResponse.meeting?.date).toDateString()} at {meetingResponse.meeting?.time}
+                </Text>
+              </div>
+              
+              <div style={{ 
+                background: 'rgba(255,255,255,0.9)', 
+                padding: 12, 
+                borderRadius: 6,
+                marginBottom: 12
+              }}>
+                <Text strong style={{ color: '#2c3e50', display: 'block', marginBottom: 4 }}>
+                  Meeting Link:
+                </Text>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Input 
+                    value={meetingResponse.meeting?.link} 
+                    readOnly 
+                    style={{ 
+                      flex: 1,
+                      border: 'none',
+                      background: 'transparent',
+                      color: '#2c3e50',
+                      fontFamily: 'monospace',
+                      fontSize: 12
+                    }}
+                  />
+                  <Button 
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(meetingResponse.meeting?.link);
+                      message.success('Link copied to clipboard!');
+                    }}
+                    style={{ border: 'none', background: '#8F1383', color: 'white' }}
+                  >
+                    Copy
+                  </Button>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Button 
+                  type="primary"
+                  icon={<GoogleOutlined />}
+                  onClick={() => window.open(meetingResponse.meeting?.link, '_blank')}
+                  style={{ 
+                    background: '#4285f4',
+                    border: 'none',
+                    flex: 1
+                  }}
+                >
+                  Join Meeting Now
+                </Button>
+                <Button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(meetingResponse.meeting?.link);
+                    message.success('Link copied to clipboard!');
+                  }}
+                  style={{ 
+                    background: 'rgba(255,255,255,0.2)',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    color: 'white'
+                  }}
+                >
+                  Copy Link
+                </Button>
+              </div>
+            </div>
+            
+            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>
+              💡 Save this link - it has been sent to all participants via email
+            </Text>
+          </Card>
           
-          <Card style={{ marginTop: 20, textAlign: 'left' }}>
+          {/* Status Information */}
+          <Card style={{ marginBottom: 24, textAlign: 'left' }}>
+            <Title level={5} style={{ marginBottom: 16 }}>📧 Invitation Status</Title>
             <List
               size="small"
               dataSource={[
-                `Meeting invitations sent to ${task?.members?.length || 0} participants`,
-                'Email invitations include meeting link and agenda',
-                'Participants will receive calendar reminders',
-                'Meeting room/link will be accessible 10 minutes before start time'
+                `✅ Emails sent to ${meetingResponse.assignees?.length || 0} team members`,
+                '📅 Calendar reminders automatically added for all participants',
+                '📋 Agenda and preparation notes included in invitation',
+                '⚡ AI recommendations applied to optimize meeting effectiveness',
+                meetingResponse.emailStatus || 'Email delivery completed'
               ]}
               renderItem={item => (
-                <List.Item>
+                <List.Item style={{ padding: '8px 0', borderBottom: 'none' }}>
                   <Text>{item}</Text>
                 </List.Item>
               )}
             />
           </Card>
 
-          <div style={{ marginTop: 24 }}>
-            <Button 
-              type="primary" 
-              size="large"
-              onClick={resetAndClose}
-              style={{ background: '#8F1383', borderColor: '#8F1383' }}
-            >
-              Done
-            </Button>
+          <div style={{ marginTop: 32 }}>
+            <Space>
+              <Button 
+                type="primary" 
+                size="large"
+                onClick={resetAndClose}
+                style={{ 
+                  background: 'linear-gradient(90deg, #8F1383 0%, #432E54 100%)',
+                  border: 'none',
+                  minWidth: 160,
+                  height: 48
+                }}
+              >
+                Done
+              </Button>
+              <Button 
+                size="large"
+                onClick={() => window.open(meetingResponse.meeting?.link, '_blank')}
+                style={{ height: 48 }}
+              >
+                Open Meeting Link
+              </Button>
+            </Space>
           </div>
         </div>
       )}
