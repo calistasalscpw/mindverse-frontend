@@ -8,9 +8,9 @@ This repository hosts the **frontend application** for MindVerse, a collaborativ
 * **Personal Dashboard:** Organize and track tasks with a visual, column-based layout.
 * **Team Collaboration:** Manage team members and task assignments efficiently.
 * **Community Forum:** Engage in discussions, share knowledge, and connect with other users.
-* **Secure Authentication:** User registration and login functionalities.
-* **Interactive Chatbot:** An AI-powered assistant for quick queries and support.
-* **AI-Scheduled Meeting** An AI-powered team meeting scheduler based on task priority.
+* **Secure Authentication:** User registration and login functionalities with Google login option.
+* **Interactive Chatbot:** An AI-powered assistant for quick queries and support, with a user-friendly chat interface.
+* **AI-Scheduled Meeting** An AI-powered team meeting scheduler based on task priority, with smart recommendations.
 
 ---
 ## Technologies & Tools
@@ -20,6 +20,7 @@ This repository hosts the **frontend application** for MindVerse, a collaborativ
 * **Routing:** React Router DOM
 * **State Management:** React Context API
 * **API Communication:** Axios
+* **Drag and Drop:** @hello-pangea/dnd
 
 ---
 ## Core Components & Pages
@@ -37,6 +38,8 @@ This repository hosts the **frontend application** for MindVerse, a collaborativ
     * **Description:** A modal form interface allowing users to **create new tasks**. This includes fields for task assignment, due dates, and detailed descriptions.
 * **`TaskEdit.jsx`** 
     * **Description:** A modal form designed for **editing existing tasks**, providing a similar intuitive interface and functionality to the `TaskCreate` component.
+* **`SmartMeetingScheduler.jsx`** 
+    * **Description:** A modal component that analyzes a task with AI to suggest optimal meeting details, and allows scheduling of meetings.
 
 ### Contexts (`src/contexts/`)
 
@@ -60,7 +63,7 @@ This repository hosts the **frontend application** for MindVerse, a collaborativ
 
 ---
 
-## 🚦 Frontend Routing
+## Frontend Routing
 
 The application's navigation is managed by React Router DOM, providing clean and intuitive URLs:
 
